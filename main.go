@@ -132,7 +132,8 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Sorting an array by score
-	funniest := jokes
+	var funniest []Joke
+	funniest = append(funniest, jokes...)
 	sort.Slice(funniest, func(i, j int) (less bool) {
 		return funniest[i].Score > funniest[j].Score
 	})
@@ -165,7 +166,8 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
+
 	r.HandleFunc("/jokes", getJokes).Methods("GET")
 	r.HandleFunc("/jokes/add", addJoke).Methods("POST")
 	r.HandleFunc("/jokes/search", getJoke).Methods("GET")

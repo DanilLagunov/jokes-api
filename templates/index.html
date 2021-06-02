@@ -2,29 +2,40 @@
 
 {{ template "header" }}
 
-<form method="POST" action="/jokes/add">
-  <input type="text" name="title">
-  <input type="text" name="body">
-  <input type="submit" value="Добавить">
-</form>
+<div class="container">
 
-<form method="GET" action="/jokes/search">
-  <input type="text" name="id">
-  <input type="submit" value="Найти по Id">
-</form>
-
-<form method="GET" action="/jokes/search">
-    <input type="text" name="text">
-    <input type="submit" value="Найти по тексту">
+<div class="wrapper">
+  <form method="POST" action="/jokes/add">
+    <input type="text" placeholder="Title" name="title">
+    <!-- <input type="text" placeholder="Body" name="body"> -->
+    <textarea placeholder="Body" name="body" ></textarea>
+    <button type="submit">Add</button>
+    <!-- <input class="button" type="submit" value="Add"> -->
   </form>
+</div>
+
+<div class="wrapper search">
+  <form class="search-form" method="GET" action="/jokes/search">
+    <input type="text" placeholder="Search by ID" name="id">
+    <button type="submit">Search</button>
+    <!-- <input class="button" type="submit" value="Search"> -->
+  </form>
+  
+  <form class="search-form" method="GET" action="/jokes/search">
+      <input type="text" placeholder="Search by text" name="text">
+      <button type="submit">Search</button>
+      <!-- <input class="button" type="submit" value="Search"> -->
+  </form>
+</div>
 
 {{range $key, $value := .}}
-<div>
-    <h3>{{ $value.Title}}</h1>
-    <p>{{ $value.Body}}</p>
-    <span>{{ $value.Score}}</span>
-</div>
+  <div class="wrapper">
+    <h3 class="joke-title">{{ $value.Title}}</h1>
+    <p class="joke-body">{{ $value.Body}}</p>
+    <span class="joke-score">Score: {{ $value.Score}}</span>
+  </div>
 {{end}}
+</div>
 
 {{ template "footer" }}
 
