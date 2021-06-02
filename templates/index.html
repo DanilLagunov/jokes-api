@@ -1,0 +1,31 @@
+{{ define "index" }}
+
+{{ template "header" }}
+
+<form method="POST" action="/jokes/add">
+  <input type="text" name="title">
+  <input type="text" name="body">
+  <input type="submit" value="Добавить">
+</form>
+
+<form method="GET" action="/jokes/search">
+  <input type="text" name="id">
+  <input type="submit" value="Найти по Id">
+</form>
+
+<form method="GET" action="/jokes/search">
+    <input type="text" name="text">
+    <input type="submit" value="Найти по тексту">
+  </form>
+
+{{range $key, $value := .}}
+<div>
+    <h3>{{ $value.Title}}</h1>
+    <p>{{ $value.Body}}</p>
+    <span>{{ $value.Score}}</span>
+</div>
+{{end}}
+
+{{ template "footer" }}
+
+{{ end }}

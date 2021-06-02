@@ -1,0 +1,15 @@
+{{ define "funniest" }}
+
+{{ template "header" }}
+
+{{range $key, $value := .}}
+<div>
+    <h3>{{ $value.Title}}</h1>
+    <p>{{ $value.Body}}</p>
+    <span>{{ $value.Score}}</span>
+</div>
+{{end}}
+
+{{ template "footer" }}
+
+{{ end }}
