@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +30,8 @@ func NewJoke(id, title, body string, score int) Joke {
 	return Joke{id, title, body, score}
 }
 
+//GLOBAL VARIABLES
+
 var jokes []Joke
 
 var t *template.Template
@@ -36,7 +39,18 @@ var t *template.Template
 // HANDLERS
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
-	t.ExecuteTemplate(w, "index", jokes)
+	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t.ExecuteTemplate(w, "index", jokes[skip:skip+seed])
+
 }
 
 func addJoke(w http.ResponseWriter, r *http.Request) {
