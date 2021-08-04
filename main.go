@@ -31,14 +31,11 @@ func NewJoke(id, title, body string, score int) Joke {
 
 var jokes []Joke
 
+var t *template.Template
+
 // HANDLERS
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/index.html", "templates/header.html", "templates/footer.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-	}
-
 	t.ExecuteTemplate(w, "index", jokes)
 }
 
@@ -51,7 +48,7 @@ func addJoke(w http.ResponseWriter, r *http.Request) {
 
 	// Check for uniqueness
 CHECK:
-	id = GenerateId()
+	id = generateId()
 	for i := 0; i < len(jokes); i++ {
 		if id == jokes[i].ID {
 			goto CHECK
@@ -82,10 +79,6 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
 	var result []Joke
-	t, err := template.ParseFiles("templates/findjoke.html", "templates/header.html", "templates/footer.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-	}
 
 	//Searching by text
 	if text != "" {
@@ -109,10 +102,6 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRandomJokes(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/random.html", "templates/header.html", "templates/footer.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-	}
 	s := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(s)
 
@@ -126,11 +115,6 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/funniest.html", "templates/header.html", "templates/footer.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-	}
-
 	//Sorting an array by score
 	var funniest []Joke
 	funniest = append(funniest, jokes...)
@@ -153,7 +137,7 @@ func parseJSON(path string, list *[]Joke) {
 	}
 }
 
-func GenerateId() string {
+func generateId() string {
 	b := make([]byte, 3)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
@@ -165,6 +149,8 @@ func main() {
 	parseJSON("reddit_jokes.json", &jokes)
 
 	r := mux.NewRouter()
+
+	t, _ = template.ParseFiles("templates/index.html", "templates/findjoke.html", "templates/random.html", "templates/funniest.html", "templates/header.html", "templates/footer.html")
 
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
