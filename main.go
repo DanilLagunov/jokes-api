@@ -49,7 +49,10 @@ func getJokes(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	t.ExecuteTemplate(w, "index", jokes[skip:skip+seed])
+	err = t.ExecuteTemplate(w, "index", jokes[skip:skip+seed])
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -101,7 +104,10 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 				result = append(result, item)
 			}
 		}
-		t.ExecuteTemplate(w, "findjoke", result)
+		err := t.ExecuteTemplate(w, "findjoke", result)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	//Searching by ID
@@ -109,7 +115,10 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 		for _, item := range jokes {
 			if item.ID == id {
 				result = append(result, item)
-				t.ExecuteTemplate(w, "findjoke", result)
+				err := t.ExecuteTemplate(w, "findjoke", result)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 	}
@@ -119,24 +128,52 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 	s := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(s)
 
+	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//Filling an array with random elements
 	var rndjokes [100]Joke
 	for i := 0; i < 100; i++ {
 		rndjokes[i] = jokes[rnd.Intn(len(jokes))]
 	}
 
-	t.ExecuteTemplate(w, "random", rndjokes)
+	err = t.ExecuteTemplate(w, "random", rndjokes[skip:skip+seed])
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	//Sorting an array by score
+
+	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var funniest []Joke
+
 	funniest = append(funniest, jokes...)
 	sort.Slice(funniest, func(i, j int) (less bool) {
 		return funniest[i].Score > funniest[j].Score
 	})
 
-	t.ExecuteTemplate(w, "funniest", funniest[0:99])
+	err = t.ExecuteTemplate(w, "funniest", funniest[skip:skip+seed])
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // ADDITIONAL FUNCS
