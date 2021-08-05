@@ -35,7 +35,12 @@
     <span class="joke-score">Score: {{ $value.Score}}</span>
   </div>
 {{end}}
+
+<a href="/jokes?skip={{.Prev}}&seed={{.Seed}}">Prev</a>
+<a href="/jokes?skip={{.Next}}&seed={{.Seed}}">Next</a>
+
 </div>
+
 
 {{ template "footer" }}
 

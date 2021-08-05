@@ -3,13 +3,18 @@
 {{ template "header" }}
 
 <div class="container">
-{{range $key, $value := .}}
-    <div class="wrapper">
-        <h3 class="joke-title">{{ $value.Title}}</h1>
-        <p class="joke-body">{{ $value.Body}}</p>
-        <span class="joke-score">Score: {{ $value.Score}}</span>
-    </div>
+
+{{range $key, $value := .Content}}
+  <div class="wrapper">
+    <h3 class="joke-title">{{ $value.Title}}</h1>
+    <p class="joke-body">{{ $value.Body}}</p>
+    <span class="joke-score">Score: {{ $value.Score}}</span>
+  </div>
 {{end}}
+
+<a href="/jokes/funniest?skip={{.Prev}}&seed={{.Seed}}">Prev</a>
+<a href="/jokes/funniest?skip={{.Next}}&seed={{.Seed}}">Next</a>
+
 </div>
 
 {{ template "footer" }}

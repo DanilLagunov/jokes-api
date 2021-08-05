@@ -2,13 +2,18 @@
 
 {{ template "header" }}
 <div class="container">
-{{range $key, $value := .}}
-<div class="wrapper">
+
+{{range $key, $value := .Content}}
+  <div class="wrapper">
     <h3 class="joke-title">{{ $value.Title}}</h1>
     <p class="joke-body">{{ $value.Body}}</p>
     <span class="joke-score">Score: {{ $value.Score}}</span>
-</div>
+  </div>
 {{end}}
+
+<a href="/jokes/random?skip={{.Prev}}&seed={{.Seed}}">Prev</a>
+<a href="/jokes/random?skip={{.Next}}&seed={{.Seed}}">Next</a>
+
 </div>
 
 

@@ -36,6 +36,8 @@ type Page struct {
 	Skip    int
 	Seed    int
 	Content []Joke
+	Next    int
+	Prev    int
 }
 
 //GLOBAL VARIABLES
@@ -64,6 +66,8 @@ func getJokes(w http.ResponseWriter, r *http.Request) {
 	page.Skip = skip
 	page.Seed = seed
 	page.Content = jokes[skip : skip+seed]
+	page.Next = skip + seed
+	page.Prev = skip - seed
 
 	err = t.ExecuteTemplate(w, "index", page)
 	if err != nil {
@@ -144,23 +148,33 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 	s := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(s)
 
+	var page Page
+
 	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		skip = 0
 	}
 
 	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		seed = 10
 	}
 
 	//Filling an array with random elements
-	var rndjokes [100]Joke
-	for i := 0; i < 100; i++ {
+	var rndjokes [300]Joke
+	for i := 0; i < 300; i++ {
 		rndjokes[i] = jokes[rnd.Intn(len(jokes))]
 	}
 
-	err = t.ExecuteTemplate(w, "random", rndjokes[skip:skip+seed])
+	page.Skip = skip
+	page.Seed = seed
+	page.Content = rndjokes[skip : skip+seed]
+	page.Next = skip + seed
+	page.Prev = skip - seed
+
+	err = t.ExecuteTemplate(w, "random", page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -169,16 +183,19 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	//Sorting an array by score
 
+	var page Page
+
 	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		skip = 0
 	}
 
 	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		seed = 10
 	}
-
 	var funniest []Joke
 
 	funniest = append(funniest, jokes...)
@@ -186,7 +203,13 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		return funniest[i].Score > funniest[j].Score
 	})
 
-	err = t.ExecuteTemplate(w, "funniest", funniest[skip:skip+seed])
+	page.Skip = skip
+	page.Seed = seed
+	page.Content = funniest[skip : skip+seed]
+	page.Next = skip + seed
+	page.Prev = skip - seed
+
+	err = t.ExecuteTemplate(w, "funniest", page)
 	if err != nil {
 		log.Fatal(err)
 	}
