@@ -30,6 +30,14 @@ func NewJoke(id, title, body string, score int) Joke {
 	return Joke{id, title, body, score}
 }
 
+// Page struct
+
+type Page struct {
+	Skip    int
+	Seed    int
+	Content []Joke
+}
+
 //GLOBAL VARIABLES
 
 var jokes []Joke
@@ -39,17 +47,25 @@ var t *template.Template
 // HANDLERS
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
+	var page Page
+
 	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		skip = 0
 	}
 
 	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Converting err, using default value")
+		seed = 10
 	}
 
-	err = t.ExecuteTemplate(w, "index", jokes[skip:skip+seed])
+	page.Skip = skip
+	page.Seed = seed
+	page.Content = jokes[skip : skip+seed]
+
+	err = t.ExecuteTemplate(w, "index", page)
 	if err != nil {
 		log.Fatal(err)
 	}
