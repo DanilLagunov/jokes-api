@@ -33,9 +33,39 @@ func NewJoke(id, title, body string, score int) Joke {
 // Page struct
 
 type Page struct {
-	Skip    int
-	Seed    int
-	Content []Joke
+	Skip     int
+	Seed     int
+	CurrPage int
+	MaxPage  int
+	Content  []Joke
+}
+
+func NewPage(skip, seed int, content []Joke) Page {
+	currPage := skip/seed + 1
+
+	var maxPage int
+	if len(content)%seed != 0 {
+		maxPage = len(content)/seed + 1
+	} else {
+		maxPage = len(content) / seed
+	}
+
+	return Page{skip, seed, currPage, maxPage, content[skip : skip+seed]}
+}
+
+func GetPaginationParams(r *http.Request) (int, int) {
+	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	if err != nil {
+		fmt.Println("Converting err, using default value")
+		skip = 0
+	}
+
+	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
+	if err != nil {
+		fmt.Println("Converting err, using default value")
+		seed = 20
+	}
+	return skip, seed
 }
 
 //GLOBAL VARIABLES
@@ -47,25 +77,12 @@ var t *template.Template
 // HANDLERS
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
-	var page Page
 
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		skip = 0
-	}
+	skip, seed := GetPaginationParams(r)
 
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		seed = 10
-	}
+	page := NewPage(skip, seed, jokes)
 
-	page.Skip = skip
-	page.Seed = seed
-	page.Content = jokes[skip : skip+seed]
-
-	err = t.ExecuteTemplate(w, "index", page)
+	err := t.ExecuteTemplate(w, "index", page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,7 +184,6 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
-	//Sorting an array by score
 
 	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
 	if err != nil {
@@ -181,6 +197,7 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 
 	var funniest []Joke
 
+	//Sorting an array by score
 	funniest = append(funniest, jokes...)
 	sort.Slice(funniest, func(i, j int) (less bool) {
 		return funniest[i].Score > funniest[j].Score
