@@ -41,7 +41,11 @@ type Page struct {
 }
 
 func NewPage(skip, seed int, content []Joke) Page {
-	currPage := skip/seed + 1
+	if skip > len(content) || seed == 0 {
+		return Page{skip, seed, 0, 0, []Joke{}}
+	}
+
+	currPage := skip/seed + 1 // division by zero
 
 	var maxPage int
 	if len(content)%seed != 0 {
@@ -50,22 +54,39 @@ func NewPage(skip, seed int, content []Joke) Page {
 		maxPage = len(content) / seed
 	}
 
+	if skip+seed >= len(content) {
+		seed = len(content)
+		return Page{skip, seed, currPage, maxPage, content[skip:seed]}
+	}
+
 	return Page{skip, seed, currPage, maxPage, content[skip : skip+seed]}
 }
 
-func GetPaginationParams(r *http.Request) (int, int) {
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
+func GetPaginationParams(r *http.Request) (int, int, error) {
+	var skip, seed int
+	var err error
+	skipStr := r.URL.Query().Get("skip")
+	if skipStr == "" {
+		fmt.Println("Skip is not specified, using default value")
 		skip = 0
+	} else {
+		skip, err = strconv.Atoi(skipStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("Skip is not valid: %w", err)
+		}
 	}
 
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
+	seedStr := r.URL.Query().Get("seed")
+	if seedStr == "" {
+		fmt.Println("Seed is not specified, using default value")
 		seed = 20
+	} else {
+		seed, err = strconv.Atoi(seedStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("Seed is not valid: %w", err)
+		}
 	}
-	return skip, seed
+	return skip, seed, nil
 }
 
 //GLOBAL VARIABLES
@@ -78,11 +99,14 @@ var t *template.Template
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
 
-	skip, seed := GetPaginationParams(r)
+	skip, seed, err := GetPaginationParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	page := NewPage(skip, seed, jokes)
 
-	err := t.ExecuteTemplate(w, "index", page)
+	err = t.ExecuteTemplate(w, "index", page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,6 +165,7 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		return
 	}
 
 	//Searching by ID
@@ -154,30 +179,29 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+		return
 	}
 }
 
 func getRandomJokes(w http.ResponseWriter, r *http.Request) {
+
+	skip, seed, err := GetPaginationParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	s := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(s)
 
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	//Filling an array with random elements
-	var rndjokes [100]Joke
-	for i := 0; i < 100; i++ {
-		rndjokes[i] = jokes[rnd.Intn(len(jokes))]
+	var rndjokes []Joke
+	for i := 0; i < 300; i++ {
+		rndjokes = append(rndjokes, jokes[rnd.Intn(len(jokes))])
 	}
 
-	err = t.ExecuteTemplate(w, "random", rndjokes[skip:skip+seed])
+	page := NewPage(skip, seed, rndjokes)
+
+	err = t.ExecuteTemplate(w, "random", page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -185,16 +209,10 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	skip, seed, err := GetPaginationParams(r)
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var funniest []Joke
 
 	//Sorting an array by score
@@ -203,7 +221,9 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		return funniest[i].Score > funniest[j].Score
 	})
 
-	err = t.ExecuteTemplate(w, "funniest", funniest[skip:skip+seed])
+	page := NewPage(skip, seed, funniest)
+
+	err = t.ExecuteTemplate(w, "funniest", page)
 	if err != nil {
 		log.Fatal(err)
 	}

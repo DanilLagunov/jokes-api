@@ -3,13 +3,15 @@
 {{ template "header" }}
 
 <div class="container">
-{{range $key, $value := .}}
+    {{range $key, $value := .Content}}
     <div class="wrapper">
-        <h3 class="joke-title">{{ $value.Title}}</h1>
-        <p class="joke-body">{{ $value.Body}}</p>
-        <span class="joke-score">Score: {{ $value.Score}}</span>
+      <h3 class="joke-title">{{ $value.Title}}</h1>
+      <p class="joke-body">{{ $value.Body}}</p>
+      <span class="joke-score">Score: {{ $value.Score}}</span>
     </div>
-{{end}}
+  {{end}}
+  
+  <p>{{ .CurrPage }} / {{ .MaxPage }}</p>
 </div>
 
 {{ template "footer" }}
