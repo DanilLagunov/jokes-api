@@ -17,6 +17,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const GET_JOKES_TEMPLATE string = "index"
+const GET_JOKE_BY_PARAM_TEMPLATE string = "findjoke"
+const GET_RANDOM_JOKES_TEMPLATE string = "random"
+const GET_FUNNIEST_JOKES_TEMPLATE string = "funniest"
+
 // Joke struct with constructor
 
 type Joke struct {
@@ -33,11 +38,62 @@ func NewJoke(id, title, body string, score int) Joke {
 // Page struct
 
 type Page struct {
-	Skip    int
-	Seed    int
-	Content []Joke
-	Next    int
-	Prev    int
+	Skip     int
+	Seed     int
+	CurrPage int
+	MaxPage  int
+	Content  []Joke
+	Next     int
+	Prev     int
+}
+
+func NewPage(skip, seed int, content []Joke) Page {
+	if skip > len(content) || seed == 0 || skip < 0 {
+		return Page{skip, seed, 0, 0, []Joke{}, 0, 0}
+	}
+
+	currPage := skip/seed + 1
+	next := skip + seed
+	prev := skip - seed
+	var maxPage int
+	if len(content)%seed != 0 {
+		maxPage = len(content)/seed + 1
+	} else {
+		maxPage = len(content) / seed
+	}
+
+	if skip+seed >= len(content) {
+		return Page{skip, seed, currPage, maxPage, content[skip:], next, prev}
+	}
+
+	return Page{skip, seed, currPage, maxPage, content[skip : skip+seed], next, prev}
+}
+
+func GetPaginationParams(r *http.Request) (int, int, error) {
+	var skip, seed int
+	var err error
+	skipStr := r.URL.Query().Get("skip")
+	if skipStr == "" {
+		fmt.Println("Skip is not specified, using default value")
+		skip = 0
+	} else {
+		skip, err = strconv.Atoi(skipStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("Skip is not valid: %w", err)
+		}
+	}
+
+	seedStr := r.URL.Query().Get("seed")
+	if seedStr == "" {
+		fmt.Println("Seed is not specified, using default value")
+		seed = 20
+	} else {
+		seed, err = strconv.Atoi(seedStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("Seed is not valid: %w", err)
+		}
+	}
+	return skip, seed, nil
 }
 
 //GLOBAL VARIABLES
@@ -49,27 +105,15 @@ var t *template.Template
 // HANDLERS
 
 func getJokes(w http.ResponseWriter, r *http.Request) {
-	var page Page
 
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	skip, seed, err := GetPaginationParams(r)
 	if err != nil {
-		fmt.Println("Converting err, using default value")
-		skip = 0
+		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		seed = 10
-	}
+	page := NewPage(skip, seed, jokes)
 
-	page.Skip = skip
-	page.Seed = seed
-	page.Content = jokes[skip : skip+seed]
-	page.Next = skip + seed
-	page.Prev = skip - seed
-
-	err = t.ExecuteTemplate(w, "index", page)
+	err = t.ExecuteTemplate(w, GET_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,10 +168,11 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 				result = append(result, item)
 			}
 		}
-		err := t.ExecuteTemplate(w, "findjoke", result)
+		err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
 		if err != nil {
 			log.Fatal(err)
 		}
+		return
 	}
 
 	//Searching by ID
@@ -135,81 +180,57 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 		for _, item := range jokes {
 			if item.ID == id {
 				result = append(result, item)
-				err := t.ExecuteTemplate(w, "findjoke", result)
+				err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 		}
+		return
 	}
 }
 
 func getRandomJokes(w http.ResponseWriter, r *http.Request) {
+
+	skip, seed, err := GetPaginationParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	s := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(s)
 
-	var page Page
-
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		skip = 0
-	}
-
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		seed = 10
-	}
-
 	//Filling an array with random elements
-	var rndjokes [300]Joke
+	var rndjokes []Joke
 	for i := 0; i < 300; i++ {
-		rndjokes[i] = jokes[rnd.Intn(len(jokes))]
+		rndjokes = append(rndjokes, jokes[rnd.Intn(len(jokes))])
 	}
 
-	page.Skip = skip
-	page.Seed = seed
-	page.Content = rndjokes[skip : skip+seed]
-	page.Next = skip + seed
-	page.Prev = skip - seed
+	page := NewPage(skip, seed, rndjokes)
 
-	err = t.ExecuteTemplate(w, "random", page)
+	err = t.ExecuteTemplate(w, GET_RANDOM_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
-	//Sorting an array by score
 
-	var page Page
-
-	skip, err := strconv.Atoi(r.URL.Query().Get("skip"))
+	skip, seed, err := GetPaginationParams(r)
 	if err != nil {
-		fmt.Println("Converting err, using default value")
-		skip = 0
-	}
-
-	seed, err := strconv.Atoi(r.URL.Query().Get("seed"))
-	if err != nil {
-		fmt.Println("Converting err, using default value")
-		seed = 10
+		w.WriteHeader(http.StatusBadRequest)
 	}
 	var funniest []Joke
 
+	//Sorting an array by score
 	funniest = append(funniest, jokes...)
 	sort.Slice(funniest, func(i, j int) (less bool) {
 		return funniest[i].Score > funniest[j].Score
 	})
 
-	page.Skip = skip
-	page.Seed = seed
-	page.Content = funniest[skip : skip+seed]
-	page.Next = skip + seed
-	page.Prev = skip - seed
+	page := NewPage(skip, seed, funniest)
 
-	err = t.ExecuteTemplate(w, "funniest", page)
+	err = t.ExecuteTemplate(w, GET_FUNNIEST_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
