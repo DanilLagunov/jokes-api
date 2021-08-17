@@ -17,6 +17,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const GET_JOKES_TEMPLATE string = "index"
+const GET_JOKE_BY_PARAM_TEMPLATE string = "findjoke"
+const GET_RANDOM_JOKES_TEMPLATE string = "random"
+const GET_FUNNIEST_JOKES_TEMPLATE string = "funniest"
+
 // Joke struct with constructor
 
 type Joke struct {
@@ -45,7 +50,7 @@ func NewPage(skip, seed int, content []Joke) Page {
 		return Page{skip, seed, 0, 0, []Joke{}}
 	}
 
-	currPage := skip/seed + 1 // division by zero
+	currPage := skip/seed + 1
 
 	var maxPage int
 	if len(content)%seed != 0 {
@@ -106,7 +111,7 @@ func getJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, jokes)
 
-	err = t.ExecuteTemplate(w, "index", page)
+	err = t.ExecuteTemplate(w, GET_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -161,7 +166,7 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 				result = append(result, item)
 			}
 		}
-		err := t.ExecuteTemplate(w, "findjoke", result)
+		err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -173,7 +178,7 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 		for _, item := range jokes {
 			if item.ID == id {
 				result = append(result, item)
-				err := t.ExecuteTemplate(w, "findjoke", result)
+				err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -201,7 +206,7 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, rndjokes)
 
-	err = t.ExecuteTemplate(w, "random", page)
+	err = t.ExecuteTemplate(w, GET_RANDOM_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -223,7 +228,7 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, funniest)
 
-	err = t.ExecuteTemplate(w, "funniest", page)
+	err = t.ExecuteTemplate(w, GET_FUNNIEST_JOKES_TEMPLATE, page)
 	if err != nil {
 		log.Fatal(err)
 	}
