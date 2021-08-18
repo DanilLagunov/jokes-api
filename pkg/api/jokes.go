@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/DanilLagunov/jokes-api/pkg/models"
@@ -50,9 +51,9 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesTemplate, result)
+		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, result)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Fatal(err)
 		}
 		return
 	}
@@ -67,16 +68,16 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesTemplate, result)
+		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokeByIDTemplate, result)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Fatal(err)
 		}
 		return
 	}
 
-	err := h.template.Template.ExecuteTemplate(w, h.template.GetJokesTemplate, models.Joke{})
+	err := h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, []models.Joke{})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
 	}
 	return
 

@@ -17,12 +17,12 @@ type Handler struct {
 	template models.Template
 }
 
-func NewHandler(s storage.Storage) *Handler {
+func NewHandler(s storage.Storage, t models.Template) *Handler {
 	h := &Handler{
-		storage: s,
+		storage:  s,
+		template: t,
 	}
 	h.Router = h.initRoutes()
-	h.template = models.NewTemptale()
 	return h
 }
 
