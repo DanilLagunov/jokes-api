@@ -40,6 +40,10 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	text := r.URL.Query().Get("text")
 	id := r.URL.Query().Get("id")
+	skip, seed, err := h.getPaginationParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	if text != "" {
 		result, err := h.storage.GetJokeByText(text)
@@ -51,7 +55,8 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, result)
+		page := models.NewPage(skip, seed, result)
+		err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, models.SearchPage{Data: text, Page: page})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -75,7 +80,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, []models.Joke{})
+	err = h.template.Template.ExecuteTemplate(w, h.template.GetJokesByTextTemplate, []models.Joke{})
 	if err != nil {
 		log.Fatal(err)
 	}
