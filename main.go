@@ -55,6 +55,7 @@ func NewPage(skip, seed int, content []Joke) Page {
 	currPage := skip/seed + 1
 	next := skip + seed
 	prev := skip - seed
+
 	var maxPage int
 	if len(content)%seed != 0 {
 		maxPage = len(content)/seed + 1
@@ -117,7 +118,6 @@ func getJokes(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func addJoke(w http.ResponseWriter, r *http.Request) {
