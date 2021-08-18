@@ -17,10 +17,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const GET_JOKES_TEMPLATE string = "index"
-const GET_JOKE_BY_PARAM_TEMPLATE string = "findjoke"
-const GET_RANDOM_JOKES_TEMPLATE string = "random"
-const GET_FUNNIEST_JOKES_TEMPLATE string = "funniest"
+const GetJokesTemplate string = "index"
+const GetJokeByParamTemplate string = "findjoke"
+const GetRandomJokesTemplate string = "random"
+const GetFunniestJokesTemplate string = "funniest"
 
 // Joke struct with constructor
 
@@ -43,14 +43,18 @@ type Page struct {
 	CurrPage int
 	MaxPage  int
 	Content  []Joke
+	Next     int
+	Prev     int
 }
 
 func NewPage(skip, seed int, content []Joke) Page {
 	if skip > len(content) || seed == 0 {
-		return Page{skip, seed, 0, 0, []Joke{}}
+		return Page{skip, seed, 0, 0, []Joke{}, 0, 0}
 	}
 
 	currPage := skip/seed + 1
+	next := skip + seed
+	prev := skip - seed
 
 	var maxPage int
 	if len(content)%seed != 0 {
@@ -60,11 +64,10 @@ func NewPage(skip, seed int, content []Joke) Page {
 	}
 
 	if skip+seed >= len(content) {
-		seed = len(content)
-		return Page{skip, seed, currPage, maxPage, content[skip:seed]}
+		return Page{skip, seed, currPage, maxPage, content[skip:], next, prev}
 	}
 
-	return Page{skip, seed, currPage, maxPage, content[skip : skip+seed]}
+	return Page{skip, seed, currPage, maxPage, content[skip : skip+seed], next, prev}
 }
 
 func GetPaginationParams(r *http.Request) (int, int, error) {
@@ -77,7 +80,10 @@ func GetPaginationParams(r *http.Request) (int, int, error) {
 	} else {
 		skip, err = strconv.Atoi(skipStr)
 		if err != nil {
-			return 0, 0, fmt.Errorf("Skip is not valid: %w", err)
+			return 0, 0, fmt.Errorf("skip is not valid: %w", err)
+		}
+		if skip < 0 {
+			return 0, 0, fmt.Errorf("skip is negative: %w", err)
 		}
 	}
 
@@ -88,7 +94,10 @@ func GetPaginationParams(r *http.Request) (int, int, error) {
 	} else {
 		seed, err = strconv.Atoi(seedStr)
 		if err != nil {
-			return 0, 0, fmt.Errorf("Seed is not valid: %w", err)
+			return 0, 0, fmt.Errorf("seed is not valid: %w", err)
+		}
+		if seed < 0 {
+			return 0, 0, fmt.Errorf("seed is negative: %w", err)
 		}
 	}
 	return skip, seed, nil
@@ -111,11 +120,10 @@ func getJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, jokes)
 
-	err = t.ExecuteTemplate(w, GET_JOKES_TEMPLATE, page)
+	err = t.ExecuteTemplate(w, GetJokesTemplate, page)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func addJoke(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +135,7 @@ func addJoke(w http.ResponseWriter, r *http.Request) {
 
 	// Check for uniqueness
 CHECK:
-	id = generateId()
+	id = generateID()
 	for i := 0; i < len(jokes); i++ {
 		if id == jokes[i].ID {
 			goto CHECK
@@ -141,7 +149,7 @@ CHECK:
 	//Formatting and adding joke to the file
 	rawDataOut, err := json.MarshalIndent(&jokes, "", "   ")
 	if err != nil {
-		log.Fatal("JSON marshaling failed: ", err)
+		log.Fatal("JSON marshalling failed: ", err)
 	}
 	err = ioutil.WriteFile("reddit_jokes.json", rawDataOut, 0)
 	if err != nil {
@@ -166,7 +174,7 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 				result = append(result, item)
 			}
 		}
-		err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
+		err := t.ExecuteTemplate(w, GetJokeByParamTemplate, result)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -178,7 +186,7 @@ func getJoke(w http.ResponseWriter, r *http.Request) {
 		for _, item := range jokes {
 			if item.ID == id {
 				result = append(result, item)
-				err := t.ExecuteTemplate(w, GET_JOKE_BY_PARAM_TEMPLATE, result)
+				err := t.ExecuteTemplate(w, GetJokeByParamTemplate, result)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -206,7 +214,7 @@ func getRandomJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, rndjokes)
 
-	err = t.ExecuteTemplate(w, GET_RANDOM_JOKES_TEMPLATE, page)
+	err = t.ExecuteTemplate(w, GetRandomJokesTemplate, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -228,7 +236,7 @@ func getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 
 	page := NewPage(skip, seed, funniest)
 
-	err = t.ExecuteTemplate(w, GET_FUNNIEST_JOKES_TEMPLATE, page)
+	err = t.ExecuteTemplate(w, GetFunniestJokesTemplate, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -246,7 +254,7 @@ func parseJSON(path string, list *[]Joke) {
 	}
 }
 
-func generateId() string {
+func generateID() string {
 	b := make([]byte, 3)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
