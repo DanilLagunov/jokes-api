@@ -1,17 +1,18 @@
-package models
+package views
 
 import (
 	"fmt"
 	"html/template"
 )
 
+const GetJokesTemplate string = "index"
+const GetJokesByTextTemplate string = "get-jokes-by-text"
+const GetJokeByIDTemplate string = "get-joke-by-id"
+const GetRandomJokesTemplate string = "random"
+const GetFunniestJokesTemplate string = "funniest"
+
 type Template struct {
-	Template                 *template.Template
-	GetJokesTemplate         string
-	GetJokesByTextTemplate   string
-	GetJokeByIDTemplate      string
-	GetRandomJokesTemplate   string
-	GetFunniestJokesTemplate string
+	Template *template.Template
 }
 
 func NewTemptale() Template {
@@ -28,10 +29,5 @@ func NewTemptale() Template {
 		fmt.Println("template parsing error: %w", err)
 	}
 	t.Template = template
-	t.GetJokesTemplate = "index"
-	t.GetJokeByIDTemplate = "get-joke-by-id"
-	t.GetJokesByTextTemplate = "get-jokes-by-text"
-	t.GetRandomJokesTemplate = "random"
-	t.GetFunniestJokesTemplate = "funniest"
 	return t
 }

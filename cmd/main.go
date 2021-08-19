@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
-	"github.com/DanilLagunov/jokes-api/pkg/models"
-	memory_storage "github.com/DanilLagunov/jokes-api/pkg/storage/memory-storage"
+	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
+	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
 func main() {
-	storage := memory_storage.NewMemoryStorage()
-	template := models.NewTemptale()
+	storage := file_storage.NewFileStorage("../pkg/storage/file-storage/reddit_jokes.json")
+	template := views.NewTemptale()
 	server := http.Server{
 		Addr:              ":8000",
 		Handler:           api.NewHandler(storage, template),

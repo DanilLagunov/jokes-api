@@ -3,7 +3,7 @@
 {{ template "header" }}
 
 <div class="container">
-    {{range $key, $value := .Page.Content}}
+    {{range $key, $value := .PaginationData.Content}}
     <div class="wrapper">
       <h3 class="joke-title">{{ $value.Title}}</h1>
       <p class="joke-body">{{ $value.Body}}</p>
@@ -11,9 +11,9 @@
     </div>
     {{end}}
   
-  <a href="/jokes/search?text={{.Data}}&skip={{.Page.Prev}}&seed={{.Page.Seed}}">Prev</a>
-  <span>{{.Page.CurrPage}} / {{.Page.MaxPage}}</span>
-  <a href="/jokes/search?text={{.Data}}&skip={{.Page.Next}}&seed={{.Page.Seed}}">Next</a>
+  <a href="/jokes/search?text={{.SearchRequest}}&skip={{.PaginationData.Prev}}&seed={{.PaginationData.Seed}}">Prev</a>
+  <span>{{.PaginationData.CurrPage}} / {{.PaginationData.MaxPage}}</span>
+  <a href="/jokes/search?text={{.SearchRequest}}&skip={{.PaginationData.Next}}&seed={{.PaginationData.Seed}}">Next</a>
 </div>
 
 {{ template "footer" }}
