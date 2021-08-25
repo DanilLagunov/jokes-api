@@ -2,17 +2,18 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
-
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
 func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
-	skip, seed, err := views.GetPaginationParams(r)
+	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -22,9 +23,9 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	paginationData := views.CreatePaginationData(skip, seed, jokes)
+	pageParams := views.CreatePageParams(skip, seed, jokes)
 
-	err = h.template.Template.ExecuteTemplate(w, views.GetJokesTemplate, paginationData)
+	err = h.template.Template.ExecuteTemplate(w, views.GetJokesTemplate, pageParams)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -36,13 +37,13 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 
 	h.storage.AddJoke(title, body)
 
-	http.Redirect(w, r, "/jokes", 302)
+	http.Redirect(w, r, "/jokes", http.StatusFound)
 }
 
 func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	text := r.URL.Query().Get("text")
 	id := r.URL.Query().Get("id")
-	skip, seed, err := views.GetPaginationParams(r)
+	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -57,11 +58,11 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		paginationData := views.CreatePaginationData(skip, seed, result)
+		pageParams := views.CreatePageParams(skip, seed, result)
 		err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate,
-			views.SearchPaginationData{
-				SearchRequest:  text,
-				PaginationData: paginationData,
+			views.SearchPageParams{
+				SearchRequest: text,
+				PageParams:    pageParams,
 			})
 		if err != nil {
 			log.Fatal(err)
@@ -95,7 +96,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
-	skip, seed, err := views.GetPaginationParams(r)
+	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -105,17 +106,16 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	paginationData := views.CreatePaginationData(skip, seed, random)
+	pageParams := views.CreatePageParams(skip, seed, random)
 
-	err = h.template.Template.ExecuteTemplate(w, views.GetRandomJokesTemplate, paginationData)
+	err = h.template.Template.ExecuteTemplate(w, views.GetRandomJokesTemplate, pageParams)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
-
-	skip, seed, err := views.GetPaginationParams(r)
+	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -125,10 +125,43 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	paginationData := views.CreatePaginationData(skip, seed, funniest)
+	pageParams := views.CreatePageParams(skip, seed, funniest)
 
-	err = h.template.Template.ExecuteTemplate(w, views.GetFunniestJokesTemplate, paginationData)
+	err = h.template.Template.ExecuteTemplate(w, views.GetFunniestJokesTemplate, pageParams)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func (h Handler) GetPaginationParams(r *http.Request) (int, int, error) {
+	var skip, seed int
+	var err error
+	skipStr := r.URL.Query().Get("skip")
+	if skipStr == "" {
+		fmt.Println("Skip is not specified, using default value")
+		skip = 0
+	} else {
+		skip, err = strconv.Atoi(skipStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("skip is not valid: %w", err)
+		}
+		if skip < 0 {
+			return 0, 0, fmt.Errorf("skip is negative: %w", err)
+		}
+	}
+
+	seedStr := r.URL.Query().Get("seed")
+	if seedStr == "" {
+		fmt.Println("Seed is not specified, using default value")
+		seed = 20
+	} else {
+		seed, err = strconv.Atoi(seedStr)
+		if err != nil {
+			return 0, 0, fmt.Errorf("seed is not valid: %w", err)
+		}
+		if seed < 0 {
+			return 0, 0, fmt.Errorf("seed is negative: %w", err)
+		}
+	}
+	return skip, seed, nil
 }
