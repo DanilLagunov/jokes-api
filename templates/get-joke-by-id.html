@@ -1,0 +1,15 @@
+{{ define "get-joke-by-id" }}
+
+{{ template "header" }}
+
+<div class="container">
+    <div class="wrapper">
+        <h3 class="joke-title">{{.Title}}</h1>
+        <p class="joke-body">{{.Body}}</p>
+        <span class="joke-score">Score: {{.Score}}</span>
+    </div>
+</div>
+
+{{ template "footer" }}
+
+{{ end }}
