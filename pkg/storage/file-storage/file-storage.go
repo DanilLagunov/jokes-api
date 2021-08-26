@@ -22,8 +22,6 @@ type FileStorage struct {
 	Data     []models.Joke
 }
 
-// "../pkg/storage/memory-storage/reddit_jokes.json"
-
 func NewFileStorage(filePath string) FileStorage {
 	var storage FileStorage
 	storage.FilePath = filePath

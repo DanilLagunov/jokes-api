@@ -18,13 +18,13 @@ type Template struct {
 func NewTemptale() Template {
 	var t Template
 	template, err := template.ParseFiles(
-		"../templates/index.html",
-		"../templates/get-joke-by-id.html",
-		"../templates/get-jokes-by-text.html",
-		"../templates/random.html",
-		"../templates/funniest.html",
-		"../templates/header.html",
-		"../templates/footer.html")
+		"./templates/index.html",
+		"./templates/get-joke-by-id.html",
+		"./templates/get-jokes-by-text.html",
+		"./templates/random.html",
+		"./templates/funniest.html",
+		"./templates/header.html",
+		"./templates/footer.html")
 	if err != nil {
 		fmt.Println("template parsing error: %w", err)
 	}

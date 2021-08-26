@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	storage := file_storage.NewFileStorage("../pkg/storage/file-storage/reddit_jokes.json")
+	storage := file_storage.NewFileStorage("./pkg/storage/file-storage/reddit_jokes.json")
 	template := views.NewTemptale()
 	server := http.Server{
 		Addr:              ":8000",
