@@ -8,7 +8,7 @@ import (
 
 func (h Handler) initRoutes() *mux.Router {
 	router := mux.NewRouter()
-	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("../assets/"))))
+	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
 	router.HandleFunc("/jokes", h.getJokes).Methods(http.MethodGet)
 	router.HandleFunc("/jokes/add", h.addJoke).Methods(http.MethodPost)
