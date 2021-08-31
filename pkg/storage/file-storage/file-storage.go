@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"sort"
@@ -22,18 +21,18 @@ type FileStorage struct {
 	Data     []models.Joke
 }
 
-func NewFileStorage(filePath string) FileStorage {
+func NewFileStorage(filePath string) *FileStorage {
 	var storage FileStorage
 	storage.FilePath = filePath
 	parseJSON(storage.FilePath, &storage.Data)
-	return storage
+	return &storage
 }
 
-func (s FileStorage) GetJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetJokes() ([]models.Joke, error) {
 	return s.Data, nil
 }
 
-func (s FileStorage) AddJoke(title, body string) error {
+func (s *FileStorage) AddJoke(title, body string) error {
 	var id string
 CHECK:
 	id = models.GenerateID()
@@ -46,19 +45,19 @@ CHECK:
 	joke := models.NewJoke(id, title, body, 0)
 	s.Data = append(s.Data, joke)
 
-	rawDataOut, err := json.MarshalIndent(&s, "", "   ")
+	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		log.Fatal("JSON marshalling failed: ", err)
+		fmt.Println("JSON marshalling failed: ", err)
 	}
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		log.Fatal("Cannot write:", err)
+		fmt.Println("Cannot write:", err)
 	}
 
 	return nil
 }
 
-func (s FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
+func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 	var result []models.Joke
 	for _, item := range s.Data {
 		if strings.Contains(item.Title, text) || strings.Contains(item.Body, text) {
@@ -71,7 +70,7 @@ func (s FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 	return result, JokeNotFound
 }
 
-func (s FileStorage) GetJokeByID(id string) (models.Joke, error) {
+func (s *FileStorage) GetJokeByID(id string) (models.Joke, error) {
 	for _, item := range s.Data {
 		if item.ID == id {
 			return item, nil
@@ -80,7 +79,7 @@ func (s FileStorage) GetJokeByID(id string) (models.Joke, error) {
 	return models.Joke{}, JokeNotFound
 }
 
-func (s FileStorage) GetRandomJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
 	var random []models.Joke
@@ -92,7 +91,7 @@ func (s FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	return random, nil
 }
 
-func (s FileStorage) GetFunniestJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
 	var funniest []models.Joke
 
 	funniest = append(funniest, s.Data...)
@@ -112,6 +111,6 @@ func parseJSON(path string, list *[]models.Joke) {
 
 	err = decoder.Decode(&list)
 	if err != nil {
-		fmt.Println("Decode error")
+		fmt.Println("Decode error", err)
 	}
 }
