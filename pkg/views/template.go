@@ -15,16 +15,10 @@ type Template struct {
 	Template *template.Template
 }
 
-func NewTemptale() Template {
+func NewTemptale(path [7]string) Template {
 	var t Template
 	template, err := template.ParseFiles(
-		"./templates/index.html",
-		"./templates/get-joke-by-id.html",
-		"./templates/get-jokes-by-text.html",
-		"./templates/random.html",
-		"./templates/funniest.html",
-		"./templates/header.html",
-		"./templates/footer.html")
+		path[0], path[1], path[2], path[3], path[4], path[5], path[6])
 	if err != nil {
 		fmt.Println("template parsing error: %w", err)
 	}

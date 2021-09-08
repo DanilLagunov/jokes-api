@@ -13,7 +13,7 @@ import (
 )
 
 func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
-	skip, seed, err := h.GetPaginationParams(r)
+	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -43,7 +43,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	text := r.URL.Query().Get("text")
 	id := r.URL.Query().Get("id")
-	skip, seed, err := h.GetPaginationParams(r)
+	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -67,6 +67,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return
 	}
 
@@ -96,7 +97,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
-	skip, seed, err := h.GetPaginationParams(r)
+	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -115,7 +116,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
-	skip, seed, err := h.GetPaginationParams(r)
+	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -133,7 +134,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Handler) GetPaginationParams(r *http.Request) (int, int, error) {
+func getPaginationParams(r *http.Request) (int, int, error) {
 	var skip, seed int
 	var err error
 	skipStr := r.URL.Query().Get("skip")
