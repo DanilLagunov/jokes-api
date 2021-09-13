@@ -84,7 +84,7 @@ func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	rnd := rand.New(r)
 	var random []models.Joke
 
-	for i := 0; i < 300; i++ {
+	for i := 0; i < len(s.Data); i++ {
 		random = append(random, s.Data[rnd.Intn(len(s.Data))])
 	}
 

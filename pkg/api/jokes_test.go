@@ -1,9 +1,13 @@
 package api
 
 import (
+	"bufio"
+	"bytes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -30,14 +34,25 @@ func TestGetJokes(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/jokes", nil)
 
 	h.getJokes(recorder, req)
+	data, err := os.Open("../../templates/index_test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Close()
+
+	reader := bufio.NewReader(data)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	part := make([]byte, 1024)
+	for {
+		count, err := reader.Read(part)
+		if err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+	assert.EqualValues(t, buffer, recorder.Body)
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
-	// b, err := io.ReadAll(recorder.Body)
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-
-	// t.Log(string(b))
 }
 
 func TestGetFunniestJokes(t *testing.T) {
@@ -57,6 +72,24 @@ func TestGetFunniestJokes(t *testing.T) {
 
 	h.getFunniestJokes(recorder, req)
 
+	data, err := os.Open("../../templates/funniest_test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Close()
+
+	reader := bufio.NewReader(data)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	part := make([]byte, 1024)
+	for {
+		count, err := reader.Read(part)
+		if err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+	assert.EqualValues(t, buffer, recorder.Body)
+
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
@@ -75,7 +108,27 @@ func TestGetRandomJokes(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
 
+	data, err := os.Open("../../templates/index_test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Close()
+
+	reader := bufio.NewReader(data)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	part := make([]byte, 1024)
+	for {
+		count, err := reader.Read(part)
+		if err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+
 	h.getRandomJokes(recorder, req)
+	if buffer == recorder.Body {
+		t.Fatal("jokes not in random order")
+	}
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
@@ -95,18 +148,56 @@ func TestGetJoke(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
 	q := req.URL.Query()
-	q.Add("text", "legs")
+	q.Add("text", "say")
 	req.URL.RawQuery = q.Encode()
 
 	h.getJoke(recorder, req)
+
+	data, err := os.Open("../../templates/get-jokes-by-text_test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Close()
+
+	reader := bufio.NewReader(data)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	part := make([]byte, 1024)
+	for {
+		count, err := reader.Read(part)
+		if err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+	assert.EqualValues(t, buffer, recorder.Body)
+
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 
 	req = httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
 	q = req.URL.Query()
-	q.Add("id", "5tz0ef")
+	q.Add("id", "1a7xnd")
 	req.URL.RawQuery = q.Encode()
 
+	recorder.Body.Reset()
 	h.getJoke(recorder, req)
+
+	data, err = os.Open("../../templates/get-joke-by-id_test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reader = bufio.NewReader(data)
+	buffer = bytes.NewBuffer(make([]byte, 0))
+	part = make([]byte, 1024)
+	for {
+		count, err := reader.Read(part)
+		if err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+	assert.EqualValues(t, buffer, recorder.Body)
+
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
