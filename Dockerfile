@@ -21,7 +21,6 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 RUN apk --no-cache add tzdata
-RUN pwd
 
 COPY --from=builder ./app/build .
 COPY --from=builder ./jokes-api .
