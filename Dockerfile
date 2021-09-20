@@ -6,11 +6,9 @@ COPY ./ ./
 
 RUN go mod download -x
 
-WORKDIR /app/cmd
-
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /build
-
 WORKDIR /app
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /build ./cmd
 
 COPY ./templates ./build/templates
 COPY ./assets ./build/assets
