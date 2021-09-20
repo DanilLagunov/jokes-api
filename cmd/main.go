@@ -11,15 +11,8 @@ import (
 )
 
 func main() {
-	storage := file_storage.NewFileStorage("./pkg/storage/file-storage/reddit_jokes.json")
-	templates := [7]string{"./templates/index.html",
-		"./templates/get-joke-by-id.html",
-		"./templates/get-jokes-by-text.html",
-		"./templates/random.html",
-		"./templates/funniest.html",
-		"./templates/header.html",
-		"./templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("./reddit_jokes.json")
+	template := views.NewTemptale("./templates/")
 	server := http.Server{
 		Addr:              ":8000",
 		Handler:           api.NewHandler(storage, template),

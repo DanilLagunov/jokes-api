@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"html/template"
+	"path"
 )
 
 const GetJokesTemplate string = "index"
@@ -15,10 +16,16 @@ type Template struct {
 	Template *template.Template
 }
 
-func NewTemptale(path [7]string) Template {
+func NewTemptale(folder string) Template {
 	var t Template
 	template, err := template.ParseFiles(
-		path[0], path[1], path[2], path[3], path[4], path[5], path[6])
+		path.Join(folder, "index.html"),
+		path.Join(folder, "get-joke-by-id.html"),
+		path.Join(folder, "get-jokes-by-text.html"),
+		path.Join(folder, "random.html"),
+		path.Join(folder, "funniest.html"),
+		path.Join(folder, "header.html"),
+		path.Join(folder, "footer.html"))
 	if err != nil {
 		fmt.Println("template parsing error: %w", err)
 	}

@@ -35,7 +35,10 @@ func (s *FileStorage) GetJokes() ([]models.Joke, error) {
 func (s *FileStorage) AddJoke(title, body string) error {
 	var id string
 CHECK:
-	id = models.GenerateID()
+	id, err := models.GenerateID()
+	if err != nil {
+		return fmt.Errorf("ID generating error: %w", err)
+	}
 	for i := 0; i < len(s.Data); i++ {
 		if id == s.Data[i].ID {
 			goto CHECK
@@ -47,11 +50,11 @@ CHECK:
 
 	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		fmt.Println("JSON marshalling failed: ", err)
+		return fmt.Errorf("Marshalling error: %w", err)
 	}
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		fmt.Println("Cannot write:", err)
+		return fmt.Errorf("Cannot write: %w", err)
 	}
 
 	return nil

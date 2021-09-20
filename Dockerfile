@@ -6,21 +6,19 @@ COPY ./ ./
 
 RUN go mod download -x
 
-WORKDIR /app/cmd
-
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /jokes-api
-
 WORKDIR /app
 
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-RUN apk --no-cache add tzdata
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /build ./cmd
 
-WORKDIR /
-RUN pwd
-COPY --from=builder /jokes-api .
-COPY --from=builder /app/templates ./templates
-COPY --from=builder /app/assets ./assets
-COPY --from=builder /app/pkg/storage/file-storage/reddit_jokes.json ./pkg/storage/file-storage/
+COPY ./templates ./build/templates
+COPY ./assets ./build/assets
+COPY ./reddit_jokes.json ./build
+
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata
+
+COPY --from=builder ./app/build .
 
 CMD ["./jokes-api"]
