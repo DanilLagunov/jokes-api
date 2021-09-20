@@ -16,8 +16,11 @@ func NewJoke(id, title, body string, score int) Joke {
 	return Joke{id, title, body, score}
 }
 
-func GenerateID() string {
+func GenerateID() (string, error) {
 	b := make([]byte, 3)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", fmt.Errorf("Byte reading error: %w", err)
+	}
+	return fmt.Sprintf("%x", b), nil
 }
