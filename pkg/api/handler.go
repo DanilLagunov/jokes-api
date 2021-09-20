@@ -31,5 +31,5 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	h.Router.ServeHTTP(w, req)
 
 	// measure time
-	fmt.Printf("request time is %v \n", time.Now().Sub(start))
+	fmt.Printf("request time is %v \n", time.Since(start))
 }
