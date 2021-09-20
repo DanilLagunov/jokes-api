@@ -38,7 +38,10 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	err := h.storage.AddJoke(title, body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 
