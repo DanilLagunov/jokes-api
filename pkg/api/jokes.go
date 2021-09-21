@@ -35,7 +35,15 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 
-	h.storage.AddJoke(title, body)
+	err := h.storage.AddJoke(title, body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("Response writing error: %s", err)
+		}
+		return
+	}
 
 	http.Redirect(w, r, "/jokes", http.StatusFound)
 }
@@ -91,8 +99,6 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return
-
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {

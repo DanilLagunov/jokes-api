@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"sort"
@@ -22,23 +21,27 @@ type FileStorage struct {
 	Data     []models.Joke
 }
 
-// "../pkg/storage/memory-storage/reddit_jokes.json"
-
-func NewFileStorage(filePath string) FileStorage {
+func NewFileStorage(filePath string) *FileStorage {
 	var storage FileStorage
 	storage.FilePath = filePath
-	parseJSON(storage.FilePath, &storage.Data)
-	return storage
+	err := parseJSON(storage.FilePath, &storage.Data)
+	if err != nil {
+		return &FileStorage{}
+	}
+	return &storage
 }
 
-func (s FileStorage) GetJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetJokes() ([]models.Joke, error) {
 	return s.Data, nil
 }
 
-func (s FileStorage) AddJoke(title, body string) error {
+func (s *FileStorage) AddJoke(title, body string) error {
 	var id string
 CHECK:
-	id = models.GenerateID()
+	id, err := models.GenerateID()
+	if err != nil {
+		return fmt.Errorf("ID generating error: %w", err)
+	}
 	for i := 0; i < len(s.Data); i++ {
 		if id == s.Data[i].ID {
 			goto CHECK
@@ -48,19 +51,19 @@ CHECK:
 	joke := models.NewJoke(id, title, body, 0)
 	s.Data = append(s.Data, joke)
 
-	rawDataOut, err := json.MarshalIndent(&s, "", "   ")
+	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		log.Fatal("JSON marshalling failed: ", err)
+		return fmt.Errorf("Marshalling error: %w", err)
 	}
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		log.Fatal("Cannot write:", err)
+		return fmt.Errorf("Cannot write: %w", err)
 	}
 
 	return nil
 }
 
-func (s FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
+func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 	var result []models.Joke
 	for _, item := range s.Data {
 		if strings.Contains(item.Title, text) || strings.Contains(item.Body, text) {
@@ -73,7 +76,7 @@ func (s FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 	return result, JokeNotFound
 }
 
-func (s FileStorage) GetJokeByID(id string) (models.Joke, error) {
+func (s *FileStorage) GetJokeByID(id string) (models.Joke, error) {
 	for _, item := range s.Data {
 		if item.ID == id {
 			return item, nil
@@ -82,7 +85,7 @@ func (s FileStorage) GetJokeByID(id string) (models.Joke, error) {
 	return models.Joke{}, JokeNotFound
 }
 
-func (s FileStorage) GetRandomJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
 	var random []models.Joke
@@ -94,7 +97,7 @@ func (s FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	return random, nil
 }
 
-func (s FileStorage) GetFunniestJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
 	var funniest []models.Joke
 
 	funniest = append(funniest, s.Data...)
@@ -105,15 +108,16 @@ func (s FileStorage) GetFunniestJokes() ([]models.Joke, error) {
 	return funniest, nil
 }
 
-func parseJSON(path string, list *[]models.Joke) {
+func parseJSON(path string, list *[]models.Joke) error {
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Opening file error: %w", err)
+		return fmt.Errorf("Opening file error: %w", err)
 	}
 	decoder := json.NewDecoder(file)
 
 	err = decoder.Decode(&list)
 	if err != nil {
-		fmt.Println("Decode error")
+		return fmt.Errorf("Decode error: %w", err)
 	}
+	return nil
 }
