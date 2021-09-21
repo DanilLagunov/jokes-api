@@ -24,7 +24,10 @@ type FileStorage struct {
 func NewFileStorage(filePath string) *FileStorage {
 	var storage FileStorage
 	storage.FilePath = filePath
-	parseJSON(storage.FilePath, &storage.Data)
+	err := parseJSON(storage.FilePath, &storage.Data)
+	if err != nil {
+		return &FileStorage{}
+	}
 	return &storage
 }
 
@@ -105,15 +108,16 @@ func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
 	return funniest, nil
 }
 
-func parseJSON(path string, list *[]models.Joke) {
+func parseJSON(path string, list *[]models.Joke) error {
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Opening file error: %w", err)
+		return fmt.Errorf("Opening file error: %w", err)
 	}
 	decoder := json.NewDecoder(file)
 
 	err = decoder.Decode(&list)
 	if err != nil {
-		fmt.Println("Decode error", err)
+		return fmt.Errorf("Decode error: %w", err)
 	}
+	return nil
 }

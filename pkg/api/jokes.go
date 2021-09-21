@@ -38,6 +38,11 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	err := h.storage.AddJoke(title, body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("Response writing error: %s", err)
+		}
+		return
 	}
 
 	http.Redirect(w, r, "/jokes", http.StatusFound)
