@@ -19,22 +19,15 @@ import (
 )
 
 func TestGetJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../storage/file-storage/test_jokes.json")
-	templates := [7]string{"../../templates/index.html",
-		"../../templates/get-joke-by-id.html",
-		"../../templates/get-jokes-by-text.html",
-		"../../templates/random.html",
-		"../../templates/funniest.html",
-		"../../templates/header.html",
-		"../../templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes", nil)
 
 	h.getJokes(recorder, req)
-	data, err := os.Open("../../templates/index_test.html")
+	data, err := os.Open("../../test-data/index_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,15 +49,8 @@ func TestGetJokes(t *testing.T) {
 }
 
 func TestGetFunniestJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../storage/file-storage/test_jokes.json")
-	templates := [7]string{"../../templates/index.html",
-		"../../templates/get-joke-by-id.html",
-		"../../templates/get-jokes-by-text.html",
-		"../../templates/random.html",
-		"../../templates/funniest.html",
-		"../../templates/header.html",
-		"../../templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
 	recorder := httptest.NewRecorder()
@@ -72,7 +58,7 @@ func TestGetFunniestJokes(t *testing.T) {
 
 	h.getFunniestJokes(recorder, req)
 
-	data, err := os.Open("../../templates/funniest_test.html")
+	data, err := os.Open("../../test-data/funniest_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,21 +80,14 @@ func TestGetFunniestJokes(t *testing.T) {
 }
 
 func TestGetRandomJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../storage/file-storage/test_jokes.json")
-	templates := [7]string{"../../templates/index.html",
-		"../../templates/get-joke-by-id.html",
-		"../../templates/get-jokes-by-text.html",
-		"../../templates/random.html",
-		"../../templates/funniest.html",
-		"../../templates/header.html",
-		"../../templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
 
-	data, err := os.Open("../../templates/index_test.html")
+	data, err := os.Open("../../test-data/index_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,15 +113,8 @@ func TestGetRandomJokes(t *testing.T) {
 }
 
 func TestGetJoke(t *testing.T) {
-	storage := file_storage.NewFileStorage("../storage/file-storage/test_jokes.json")
-	templates := [7]string{"../../templates/index.html",
-		"../../templates/get-joke-by-id.html",
-		"../../templates/get-jokes-by-text.html",
-		"../../templates/random.html",
-		"../../templates/funniest.html",
-		"../../templates/header.html",
-		"../../templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
 	recorder := httptest.NewRecorder()
@@ -153,7 +125,7 @@ func TestGetJoke(t *testing.T) {
 
 	h.getJoke(recorder, req)
 
-	data, err := os.Open("../../templates/get-jokes-by-text_test.html")
+	data, err := os.Open("../../test-data/get-jokes-by-text_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,7 +153,7 @@ func TestGetJoke(t *testing.T) {
 	recorder.Body.Reset()
 	h.getJoke(recorder, req)
 
-	data, err = os.Open("../../templates/get-joke-by-id_test.html")
+	data, err = os.Open("../../test-data/get-joke-by-id_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -202,29 +174,21 @@ func TestGetJoke(t *testing.T) {
 }
 
 func TestAddJoke(t *testing.T) {
-	storage := file_storage.NewFileStorage("../storage/file-storage/test_jokes.json")
-	templates := [7]string{"../../templates/index.html",
-		"../../templates/get-joke-by-id.html",
-		"../../templates/get-jokes-by-text.html",
-		"../../templates/random.html",
-		"../../templates/funniest.html",
-		"../../templates/header.html",
-		"../../templates/footer.html"}
-	template := views.NewTemptale(templates)
+	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
-	data := url.Values{}
-	data.Set("title", "Test Joke")
-	data.Set("body", "Test joke body")
+	form := url.Values{}
+	form.Set("title", "Test Joke")
+	form.Set("body", "Test joke body")
 
 	recorder := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/jokes/random", strings.NewReader(data.Encode()))
+	req := httptest.NewRequest(http.MethodGet, "/jokes/add", strings.NewReader(form.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 
-	h.getRandomJokes(recorder, req)
-
-	assert.EqualValues(t, http.StatusOK, recorder.Code)
+	h.addJoke(recorder, req)
+	assert.EqualValues(t, http.StatusFound, recorder.Code)
 }
 
 func TestGetPaginationParams(t *testing.T) {
