@@ -40,7 +40,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Response writing error: %s", err)
 		}
 		return
 	}
