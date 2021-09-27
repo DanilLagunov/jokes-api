@@ -1,6 +1,7 @@
 package file_storage
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,16 +32,18 @@ func NewFileStorage(filePath string) *FileStorage {
 	return &storage
 }
 
-func (s *FileStorage) GetJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetJokes(ctx context.Context) ([]models.Joke, error) {
+	defer ctx.Done()
 	return s.Data, nil
 }
 
-func (s *FileStorage) AddJoke(title, body string) error {
+func (s *FileStorage) AddJoke(ctx context.Context, title, body string) (models.Joke, error) {
+	defer ctx.Done()
 	var id string
 CHECK:
 	id, err := models.GenerateID()
 	if err != nil {
-		return fmt.Errorf("ID generating error: %w", err)
+		return models.Joke{}, fmt.Errorf("ID generating error: %w", err)
 	}
 	for i := 0; i < len(s.Data); i++ {
 		if id == s.Data[i].ID {
@@ -53,17 +56,18 @@ CHECK:
 
 	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		return fmt.Errorf("Marshalling error: %w", err)
+		return joke, fmt.Errorf("Marshalling error: %w", err)
 	}
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		return fmt.Errorf("Cannot write: %w", err)
+		return joke, fmt.Errorf("Cannot write: %w", err)
 	}
 
-	return nil
+	return joke, nil
 }
 
-func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
+func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.Joke, error) {
+	defer ctx.Done()
 	var result []models.Joke
 	for _, item := range s.Data {
 		if strings.Contains(item.Title, text) || strings.Contains(item.Body, text) {
@@ -76,7 +80,8 @@ func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 	return result, JokeNotFound
 }
 
-func (s *FileStorage) GetJokeByID(id string) (models.Joke, error) {
+func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
+	defer ctx.Done()
 	for _, item := range s.Data {
 		if item.ID == id {
 			return item, nil
@@ -85,7 +90,8 @@ func (s *FileStorage) GetJokeByID(id string) (models.Joke, error) {
 	return models.Joke{}, JokeNotFound
 }
 
-func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error) {
+	defer ctx.Done()
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
 	var random []models.Joke
@@ -97,7 +103,8 @@ func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
 	return random, nil
 }
 
-func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
+func (s *FileStorage) GetFunniestJokes(ctx context.Context) ([]models.Joke, error) {
+	defer ctx.Done()
 	var funniest []models.Joke
 
 	funniest = append(funniest, s.Data...)

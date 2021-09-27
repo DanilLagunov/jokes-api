@@ -6,10 +6,10 @@ import (
 )
 
 type Joke struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Body  string `json:"body"`
-	Score int    `json:"score"`
+	ID    string `json:"id" bson:"id"`
+	Title string `json:"title" bson:"title"`
+	Body  string `json:"body" bson:"body"`
+	Score int    `json:"score" bson:"score"`
 }
 
 func NewJoke(id, title, body string, score int) Joke {

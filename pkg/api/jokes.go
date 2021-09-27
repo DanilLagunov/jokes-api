@@ -1,24 +1,30 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
+const requestTimeout time.Duration = time.Second * 2
+
 func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	defer cancel()
 	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	jokes, err := h.storage.GetJokes()
+	jokes, err := h.storage.GetJokes(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -32,10 +38,12 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	defer cancel()
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 
-	err := h.storage.AddJoke(title, body)
+	_, err := h.storage.AddJoke(ctx, title, body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, err := w.Write([]byte(err.Error()))
@@ -49,6 +57,9 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	defer cancel()
+
 	text := r.URL.Query().Get("text")
 	id := r.URL.Query().Get("id")
 	skip, seed, err := h.GetPaginationParams(r)
@@ -57,7 +68,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if text != "" {
-		result, err := h.storage.GetJokeByText(text)
+		result, err := h.storage.GetJokeByText(ctx, text)
 		if err != nil {
 			if errors.Is(err, file_storage.JokeNotFound) {
 				w.WriteHeader(http.StatusNotFound)
@@ -79,7 +90,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if id != "" {
-		result, err := h.storage.GetJokeByID(id)
+		result, err := h.storage.GetJokeByID(ctx, id)
 		if err != nil {
 			if errors.Is(err, file_storage.JokeNotFound) {
 				w.WriteHeader(http.StatusNotFound)
@@ -102,12 +113,15 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	defer cancel()
+
 	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	random, err := h.storage.GetRandomJokes()
+	random, err := h.storage.GetRandomJokes(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -121,12 +135,15 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	defer cancel()
+
 	skip, seed, err := h.GetPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	funniest, err := h.storage.GetFunniestJokes()
+	funniest, err := h.storage.GetFunniestJokes(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
