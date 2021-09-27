@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bufio"
 	"bytes"
 	"log"
 	"net/http"
@@ -19,7 +18,7 @@ import (
 )
 
 func TestGetJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
@@ -27,29 +26,17 @@ func TestGetJokes(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/jokes", nil)
 
 	h.getJokes(recorder, req)
-	data, err := os.Open("../../test-data/index_test.html")
+	data, err := os.ReadFile("./test-data/index_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer data.Close()
-
-	reader := bufio.NewReader(data)
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	part := make([]byte, 1024)
-	for {
-		count, err := reader.Read(part)
-		if err != nil {
-			break
-		}
-		buffer.Write(part[:count])
-	}
-	assert.EqualValues(t, buffer, recorder.Body)
+	assert.EqualValues(t, data, recorder.Body.Bytes())
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
 func TestGetFunniestJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
@@ -58,62 +45,38 @@ func TestGetFunniestJokes(t *testing.T) {
 
 	h.getFunniestJokes(recorder, req)
 
-	data, err := os.Open("../../test-data/funniest_test.html")
+	data, err := os.ReadFile("./test-data/funniest_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer data.Close()
-
-	reader := bufio.NewReader(data)
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	part := make([]byte, 1024)
-	for {
-		count, err := reader.Read(part)
-		if err != nil {
-			break
-		}
-		buffer.Write(part[:count])
-	}
-	assert.EqualValues(t, buffer, recorder.Body)
+	assert.EqualValues(t, data, recorder.Body.Bytes())
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
 func TestGetRandomJokes(t *testing.T) {
-	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
 
-	data, err := os.Open("../../test-data/index_test.html")
+	data, err := os.ReadFile("./test-data/index_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer data.Close()
-
-	reader := bufio.NewReader(data)
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	part := make([]byte, 1024)
-	for {
-		count, err := reader.Read(part)
-		if err != nil {
-			break
-		}
-		buffer.Write(part[:count])
-	}
 
 	h.getRandomJokes(recorder, req)
-	if buffer == recorder.Body {
+	if res := bytes.Compare(data, recorder.Body.Bytes()); res == 0 {
 		t.Fatal("jokes not in random order")
 	}
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
-func TestGetJoke(t *testing.T) {
-	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+func TestGetJokeByText(t *testing.T) {
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
@@ -125,56 +88,41 @@ func TestGetJoke(t *testing.T) {
 
 	h.getJoke(recorder, req)
 
-	data, err := os.Open("../../test-data/get-jokes-by-text_test.html")
+	data, err := os.ReadFile("./test-data/get-jokes-by-text_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer data.Close()
 
-	reader := bufio.NewReader(data)
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	part := make([]byte, 1024)
-	for {
-		count, err := reader.Read(part)
-		if err != nil {
-			break
-		}
-		buffer.Write(part[:count])
-	}
-	assert.EqualValues(t, buffer, recorder.Body)
+	assert.EqualValues(t, data, recorder.Body.Bytes())
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
+}
 
-	req = httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
-	q = req.URL.Query()
+func TestGetJokeByID(t *testing.T) {
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
+	template := views.NewTemptale("../../templates/")
+	h := NewHandler(storage, template)
+
+	recorder := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
+	q := req.URL.Query()
 	q.Add("id", "1a7xnd")
 	req.URL.RawQuery = q.Encode()
 
-	recorder.Body.Reset()
 	h.getJoke(recorder, req)
 
-	data, err = os.Open("../../test-data/get-joke-by-id_test.html")
+	data, err := os.ReadFile("./test-data/get-joke-by-id_test.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	reader = bufio.NewReader(data)
-	buffer = bytes.NewBuffer(make([]byte, 0))
-	part = make([]byte, 1024)
-	for {
-		count, err := reader.Read(part)
-		if err != nil {
-			break
-		}
-		buffer.Write(part[:count])
-	}
-	assert.EqualValues(t, buffer, recorder.Body)
+	assert.EqualValues(t, data, recorder.Body.Bytes())
 
 	assert.EqualValues(t, http.StatusOK, recorder.Code)
 }
 
 func TestAddJoke(t *testing.T) {
-	storage := file_storage.NewFileStorage("../../test-data/test_jokes.json")
+	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	h := NewHandler(storage, template)
 
