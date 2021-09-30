@@ -38,10 +38,12 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	err := h.storage.AddJoke(title, body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
 		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
 			log.Printf("Response writing error: %s", err)
 		}
+
 		return
 	}
 
@@ -51,6 +53,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	text := r.URL.Query().Get("text")
 	id := r.URL.Query().Get("id")
+
 	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -59,14 +62,17 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	if text != "" {
 		result, err := h.storage.GetJokeByText(text)
 		if err != nil {
-			if errors.Is(err, file_storage.JokeNotFound) {
+			if errors.Is(err, file_storage.ErrJokeNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		pageParams := views.CreatePageParams(skip, seed, result)
+
 		err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate,
 			views.SearchPageParams{
 				SearchRequest: text,
@@ -82,13 +88,15 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 	if id != "" {
 		result, err := h.storage.GetJokeByID(id)
 		if err != nil {
-			if errors.Is(err, file_storage.JokeNotFound) {
+			if errors.Is(err, file_storage.ErrJokeNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
 		if err != nil {
 			log.Fatal(err)
@@ -142,10 +150,13 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 
 func getPaginationParams(r *http.Request) (int, int, error) {
 	var skip, seed int
+
 	var err error
+
 	skipStr := r.URL.Query().Get("skip")
 	if skipStr == "" {
 		fmt.Println("Skip is not specified, using default value")
+
 		skip = 0
 	} else {
 		skip, err = strconv.Atoi(skipStr)
@@ -160,6 +171,7 @@ func getPaginationParams(r *http.Request) (int, int, error) {
 	seedStr := r.URL.Query().Get("seed")
 	if seedStr == "" {
 		fmt.Println("Seed is not specified, using default value")
+
 		seed = 20
 	} else {
 		seed, err = strconv.Atoi(seedStr)

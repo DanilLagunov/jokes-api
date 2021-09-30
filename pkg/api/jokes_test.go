@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
@@ -153,7 +155,9 @@ func TestGetPaginationParams(t *testing.T) {
 		{"-dasdad", "20", 0, 0, false},
 	}
 	for _, tc := range tests {
-		req, _ := http.NewRequest("GET", "/", nil)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		req, _ := http.NewRequestWithContext(ctx, "GET", "/", nil)
 
 		q := req.URL.Query()
 		q.Add("skip", tc.SrcSkip)
