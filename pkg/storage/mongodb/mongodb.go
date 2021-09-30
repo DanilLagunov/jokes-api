@@ -56,7 +56,10 @@ func (d *Database) AddJoke(ctx context.Context, title, body string) (models.Joke
 }
 
 func (d *Database) GetJokeByText(ctx context.Context, text string) ([]models.Joke, error) {
-	filter := bson.M{"$or": []interface{}{bson.D{{Key: "body", Value: primitive.Regex{Pattern: text, Options: ""}}}, bson.D{{Key: "title", Value: primitive.Regex{Pattern: text, Options: ""}}}}}
+	filter := bson.M{"$or": []interface{}{
+		bson.D{{Key: "body", Value: primitive.Regex{Pattern: text, Options: "i"}}},
+		bson.D{{Key: "title", Value: primitive.Regex{Pattern: text, Options: "i"}}},
+	}}
 	cur, err := d.JokesCollection.Find(ctx, filter)
 	if err != nil {
 		log.Fatal(err)

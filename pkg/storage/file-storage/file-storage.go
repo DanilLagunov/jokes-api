@@ -33,12 +33,10 @@ func NewFileStorage(filePath string) *FileStorage {
 }
 
 func (s *FileStorage) GetJokes(ctx context.Context) ([]models.Joke, error) {
-	defer ctx.Done()
 	return s.Data, nil
 }
 
 func (s *FileStorage) AddJoke(ctx context.Context, title, body string) (models.Joke, error) {
-	defer ctx.Done()
 	var id string
 CHECK:
 	id, err := models.GenerateID()
@@ -67,7 +65,6 @@ CHECK:
 }
 
 func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.Joke, error) {
-	defer ctx.Done()
 	var result []models.Joke
 	for _, item := range s.Data {
 		if strings.Contains(item.Title, text) || strings.Contains(item.Body, text) {
@@ -81,7 +78,6 @@ func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.
 }
 
 func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
-	defer ctx.Done()
 	for _, item := range s.Data {
 		if item.ID == id {
 			return item, nil
@@ -91,7 +87,6 @@ func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, 
 }
 
 func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error) {
-	defer ctx.Done()
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
 	var random []models.Joke
@@ -104,7 +99,6 @@ func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error)
 }
 
 func (s *FileStorage) GetFunniestJokes(ctx context.Context) ([]models.Joke, error) {
-	defer ctx.Done()
 	var funniest []models.Joke
 
 	funniest = append(funniest, s.Data...)
