@@ -88,7 +88,7 @@ func TestGetJokeByText(t *testing.T) {
 	q.Add("text", "say")
 	req.URL.RawQuery = q.Encode()
 
-	h.getJoke(recorder, req)
+	h.getJokesByText(recorder, req)
 
 	data, err := os.ReadFile("./test-data/get-jokes-by-text_test.html")
 	if err != nil {
@@ -111,7 +111,7 @@ func TestGetJokeByID(t *testing.T) {
 	q.Add("id", "1a7xnd")
 	req.URL.RawQuery = q.Encode()
 
-	h.getJoke(recorder, req)
+	h.getJokeByID(recorder, req)
 
 	data, err := os.ReadFile("./test-data/get-joke-by-id_test.html")
 	if err != nil {

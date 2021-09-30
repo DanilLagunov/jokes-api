@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/DanilLagunov/jokes-api/pkg/models"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
@@ -50,9 +49,8 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/jokes", http.StatusFound)
 }
 
-func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
+func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 	text := r.URL.Query().Get("text")
-	id := r.URL.Query().Get("id")
 
 	skip, seed, err := getPaginationParams(r)
 	if err != nil {
@@ -61,12 +59,10 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 
 	if text != "" {
 		result, err := h.storage.GetJokeByText(text)
-		if err != nil {
-			if errors.Is(err, file_storage.ErrJokeNotFound) {
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
-
+		if errors.Is(err, file_storage.ErrJokeNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		} else if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -85,14 +81,16 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if id != "" {
-		result, err := h.storage.GetJokeByID(id)
-		if err != nil {
-			if errors.Is(err, file_storage.ErrJokeNotFound) {
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
+	w.WriteHeader(http.StatusBadRequest)
+}
 
+func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
+	if id := r.URL.Query().Get("id"); id != "" {
+		result, err := h.storage.GetJokeByID(id)
+		if errors.Is(err, file_storage.ErrJokeNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		} else if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -104,10 +102,7 @@ func (h Handler) getJoke(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate, []models.Joke{})
-	if err != nil {
-		log.Fatal(err)
-	}
+	w.WriteHeader(http.StatusBadRequest)
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
