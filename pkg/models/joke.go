@@ -22,8 +22,7 @@ func NewJoke(id, title, body string, score int) Joke {
 func GenerateID() (string, error) {
 	b := make([]byte, 3)
 
-	_, err := rand.Read(b)
-	if err != nil {
+	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("byte reading error: %w", err)
 	}
 
