@@ -11,6 +11,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 const requestTimeout time.Duration = time.Second * 2
@@ -180,4 +181,9 @@ func TestAddJoke(t *testing.T) {
 
 	assert.EqualValues(t, expTitle, result.Title)
 	assert.EqualValues(t, expBody, result.Body)
+
+	_, err = db.JokesCollection.DeleteOne(ctx, bson.M{"id": result.ID})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
