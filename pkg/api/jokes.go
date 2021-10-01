@@ -20,6 +20,11 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 	jokes, err := h.storage.GetJokes()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("response writing error: %s", err)
+		}
 	}
 
 	pageParams := views.CreatePageParams(skip, seed, jokes)
@@ -40,7 +45,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 
 		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
-			log.Printf("Response writing error: %s", err)
+			log.Printf("response writing error: %s", err)
 		}
 
 		return
@@ -57,52 +62,67 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	if text != "" {
-		result, err := h.storage.GetJokeByText(text)
-		if errors.Is(err, file_storage.ErrJokeNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		} else if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+	if text == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-		pageParams := views.CreatePageParams(skip, seed, result)
+	result, err := h.storage.GetJokeByText(text)
+	if errors.Is(err, file_storage.ErrJokeNotFound) {
+		w.WriteHeader(http.StatusNotFound)
 
-		err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate,
-			views.SearchPageParams{
-				SearchRequest: text,
-				PageParams:    pageParams,
-			})
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+
+		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("response writing error: %s", err)
 		}
 
 		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
+	pageParams := views.CreatePageParams(skip, seed, result)
+
+	err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate,
+		views.SearchPageParams{
+			SearchRequest: text,
+			PageParams:    pageParams,
+		})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
-	if id := r.URL.Query().Get("id"); id != "" {
-		result, err := h.storage.GetJokeByID(id)
-		if errors.Is(err, file_storage.ErrJokeNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		} else if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+	id := r.URL.Query().Get("id")
 
-		err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
-		if err != nil {
-			log.Fatal(err)
-		}
+	if id == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
+	result, err := h.storage.GetJokeByID(id)
+	if errors.Is(err, file_storage.ErrJokeNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("response writing error: %s", err)
+		}
+
+		return
+	}
+
+	err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	return
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +134,11 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 	random, err := h.storage.GetRandomJokes()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("response writing error: %s", err)
+		}
 	}
 
 	pageParams := views.CreatePageParams(skip, seed, random)
@@ -133,6 +158,11 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	funniest, err := h.storage.GetFunniestJokes()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			log.Printf("response writing error: %s", err)
+		}
 	}
 
 	pageParams := views.CreatePageParams(skip, seed, funniest)
