@@ -1,0 +1,87 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/assets/style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <title>Document</title>
+</head>
+<body>
+    <div class="header">
+        <h1 class="logo">JokesAPI</h1>
+        <nav>
+            <li><a href="/jokes">Home</a></li>
+            <li><a href="/jokes/random">Random</a></li>
+            <li><a href="/jokes/funniest">Funniest</a></li>
+        </nav>
+    </div>
+
+
+
+<div class="container">
+
+<div class="wrapper">
+  <form method="POST" action="/jokes/add">
+    <input type="text" placeholder="Title" name="title">
+    
+    <textarea placeholder="Body" name="body" ></textarea>
+    <button type="submit">Add</button>
+    
+  </form>
+</div>
+
+<div class="wrapper search">
+  <form class="search-form" method="GET" action="/jokes/search">
+    <input type="text" placeholder="Search by ID" name="id">
+    <button type="submit">Search</button>
+    
+  </form>
+  
+  <form class="search-form" method="GET" action="/jokes/search">
+      <input type="text" placeholder="Search by text" name="text">
+      <button type="submit">Search</button>
+      
+  </form>
+</div>
+
+
+  <div class="wrapper">
+    <h3 class="joke-title">I hate how you cant even say black paint anymore</h1>
+    <p class="joke-body">Now I have to say &#34;Leroy can you please paint the fence?&#34;</p>
+    <span class="joke-score">Score: 1</span>
+  </div>
+
+  <div class="wrapper">
+    <h3 class="joke-title">What&#39;s the difference between a hippie chick and a hockey player?</h1>
+    <p class="joke-body">A hockey player showers after three periods.</p>
+    <span class="joke-score">Score: 44</span>
+  </div>
+
+  <div class="wrapper">
+    <h3 class="joke-title">I recently went to America....</h1>
+    <p class="joke-body">...and being there really helped me learn about American culture. So I visited a shop and as I was leaving, the Shopkeeper said &#34;Have a nice day!&#34; But I didn&#39;t so I sued him.</p>
+    <span class="joke-score">Score: 0</span>
+  </div>
+
+
+<a href="/jokes?skip=-20&seed=20">Prev</a>
+<span>1 / 1</span>
+<a href="/jokes?skip=20&seed=20">Next</a>
+
+</div>
+
+
+
+
+</body>
+</html>
+
+
+

@@ -6,6 +6,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 )
 
+// Storage interface.
 type Storage interface {
 	GetJokes(ctx context.Context) ([]models.Joke, error)
 	AddJoke(ctx context.Context, title, body string) (models.Joke, error)

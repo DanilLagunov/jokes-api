@@ -12,7 +12,8 @@ func (h Handler) initRoutes() *mux.Router {
 
 	h.Router.HandleFunc("/jokes", h.getJokes).Methods(http.MethodGet)
 	h.Router.HandleFunc("/jokes/add", h.addJoke).Methods(http.MethodPost)
-	h.Router.HandleFunc("/jokes/search", h.getJoke).Methods(http.MethodGet)
+	h.Router.HandleFunc("/jokes/search?{id}", h.getJokeByID).Methods(http.MethodGet)
+	h.Router.HandleFunc("/jokes/search?{text}", h.getJokesByText).Methods(http.MethodGet)
 	h.Router.HandleFunc("/jokes/random", h.getRandomJokes).Methods(http.MethodGet)
 	h.Router.HandleFunc("/jokes/funniest", h.getFunniestJokes).Methods(http.MethodGet)
 

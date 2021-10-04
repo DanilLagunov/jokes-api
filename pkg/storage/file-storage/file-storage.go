@@ -1,4 +1,4 @@
-package file_storage
+package fs
 
 import (
 	"context"
@@ -15,16 +15,21 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 )
 
-var JokeNotFound = errors.New("joke not found")
+// ErrJokeNotFound describes the error when the joke is not found.
+var ErrJokeNotFound = errors.New("joke not found")
 
+// FileStorage struct.
 type FileStorage struct {
 	FilePath string
 	Data     []models.Joke
 }
 
+// NewFileStorage creating a new FileStorage object.
 func NewFileStorage(filePath string) *FileStorage {
 	var storage FileStorage
+
 	storage.FilePath = filePath
+
 	err := parseJSON(storage.FilePath, &storage.Data)
 	if err != nil {
 		return &FileStorage{}
@@ -43,6 +48,7 @@ CHECK:
 	if err != nil {
 		return models.Joke{}, fmt.Errorf("ID generating error: %w", err)
 	}
+
 	for i := 0; i < len(s.Data); i++ {
 		if id == s.Data[i].ID {
 			goto CHECK
@@ -54,11 +60,12 @@ CHECK:
 
 	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		return joke, fmt.Errorf("Marshalling error: %w", err)
+		return joke, fmt.Errorf("marshalling error: %w", err)
 	}
+
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		return joke, fmt.Errorf("Cannot write: %w", err)
+		return joke, fmt.Errorf("cannot write: %w", err)
 	}
 
 	return joke, nil
@@ -66,6 +73,7 @@ CHECK:
 
 func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.Joke, error) {
 	var result []models.Joke
+
 	for _, item := range s.Data {
 		if strings.Contains(item.Title, text) || strings.Contains(item.Body, text) {
 			result = append(result, item)
@@ -74,7 +82,7 @@ func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.
 	if len(result) != 0 {
 		return result, nil
 	}
-	return result, JokeNotFound
+	return result, ErrJokeNotFound
 }
 
 func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
@@ -83,15 +91,16 @@ func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, 
 			return item, nil
 		}
 	}
-	return models.Joke{}, JokeNotFound
+	return models.Joke{}, ErrJokeNotFound
 }
 
 func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error) {
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
-	var random []models.Joke
 
-	for i := 0; i < 300; i++ {
+	random := make([]models.Joke, len(s.Data))
+
+	for i := 0; i < len(s.Data); i++ {
 		random = append(random, s.Data[rnd.Intn(len(s.Data))])
 	}
 
@@ -112,13 +121,14 @@ func (s *FileStorage) GetFunniestJokes(ctx context.Context) ([]models.Joke, erro
 func parseJSON(path string, list *[]models.Joke) error {
 	file, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("Opening file error: %w", err)
+		return fmt.Errorf("0pening file error: %w", err)
 	}
+
 	decoder := json.NewDecoder(file)
 
 	err = decoder.Decode(&list)
 	if err != nil {
-		return fmt.Errorf("Decode error: %w", err)
+		return fmt.Errorf("decode error: %w", err)
 	}
 	return nil
 }
