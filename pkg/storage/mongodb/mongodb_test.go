@@ -16,6 +16,28 @@ import (
 
 const requestTimeout time.Duration = time.Second * 2
 
+func TestInsertJokes(t *testing.T) {
+	db, err := mongodb.NewDatabase()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	jokes := []interface{}{
+		models.Joke{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
+		models.Joke{ID: "614d98a7d2ab61b5dba3648b", Title: "Second joke", Body: "Incredible", Score: 35},
+		models.Joke{ID: "6150ed6dc471125ddd1a0912", Title: "Third joke", Body: "Funny", Score: 15},
+	}
+
+	_, err = db.JokesCollection.InsertMany(ctx, jokes)
+	if err != nil {
+		t.Fatal()
+	}
+}
+
 func TestGetJokes(t *testing.T) {
 	db, err := mongodb.NewDatabase()
 	if err != nil {
