@@ -4,6 +4,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 )
 
+// JokesPageParams struct.
 type JokesPageParams struct {
 	Skip     int
 	Seed     int
@@ -14,6 +15,7 @@ type JokesPageParams struct {
 	Prev     int
 }
 
+// CreatePageParams creating a new JokesPageParams object.
 func CreatePageParams(skip, seed int, content []models.Joke) JokesPageParams {
 	if skip > len(content) || seed == 0 {
 		return JokesPageParams{skip, seed, 0, 0, []models.Joke{}, 0, 0}
@@ -37,6 +39,7 @@ func CreatePageParams(skip, seed int, content []models.Joke) JokesPageParams {
 	return JokesPageParams{skip, seed, currPage, maxPage, content[skip : skip+seed], next, prev}
 }
 
+// SearchPageParams struct.
 type SearchPageParams struct {
 	SearchRequest string
 	PageParams    JokesPageParams

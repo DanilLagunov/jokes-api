@@ -2,6 +2,7 @@ package storage
 
 import "github.com/DanilLagunov/jokes-api/pkg/models"
 
+// Storage interface.
 type Storage interface {
 	GetJokes() ([]models.Joke, error)
 	AddJoke(title, body string) error

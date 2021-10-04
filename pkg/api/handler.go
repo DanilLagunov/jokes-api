@@ -10,12 +10,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Handler struct.
 type Handler struct {
 	Router   *mux.Router
 	storage  storage.Storage
 	template views.Template
 }
 
+// NewHandler creating a new Handler object.
 func NewHandler(s storage.Storage, t views.Template) *Handler {
 	h := &Handler{
 		storage:  s,
