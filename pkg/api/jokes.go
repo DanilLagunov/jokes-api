@@ -18,6 +18,7 @@ const requestTimeout time.Duration = time.Second * 2
 func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
+
 	skip, seed, err := getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -44,6 +45,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
+
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 

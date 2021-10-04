@@ -15,7 +15,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	template := views.NewTemptale("./templates/")
+
 	server := http.Server{
 		Addr:              ":8000",
 		Handler:           api.NewHandler(storage, template),

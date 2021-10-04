@@ -37,10 +37,12 @@ func NewFileStorage(filePath string) *FileStorage {
 	return &storage
 }
 
+// GetJokes method returns all jokes.
 func (s *FileStorage) GetJokes(ctx context.Context) ([]models.Joke, error) {
 	return s.Data, nil
 }
 
+// AddJoke method creating new joke.
 func (s *FileStorage) AddJoke(ctx context.Context, title, body string) (models.Joke, error) {
 	var id string
 CHECK:
@@ -71,6 +73,7 @@ CHECK:
 	return joke, nil
 }
 
+// GetJokeByText returns jokes which contain the desired text.
 func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.Joke, error) {
 	var result []models.Joke
 
@@ -85,6 +88,7 @@ func (s *FileStorage) GetJokeByText(ctx context.Context, text string) ([]models.
 	return result, ErrJokeNotFound
 }
 
+// GetJokeByID returns joke that has the same id.
 func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
 	for _, item := range s.Data {
 		if item.ID == id {
@@ -94,6 +98,7 @@ func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, 
 	return models.Joke{}, ErrJokeNotFound
 }
 
+// GetRandomJokes returns random jokes.
 func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error) {
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
@@ -107,6 +112,7 @@ func (s *FileStorage) GetRandomJokes(ctx context.Context) ([]models.Joke, error)
 	return random, nil
 }
 
+// GetFunniestJokes returns jokes, sorted by score.
 func (s *FileStorage) GetFunniestJokes(ctx context.Context) ([]models.Joke, error) {
 	var funniest []models.Joke
 
