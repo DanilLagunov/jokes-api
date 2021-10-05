@@ -7,7 +7,7 @@ import (
 
 // Joke struct.
 type Joke struct {
-	ID    string `json:"id" bson:"id"`
+	ID    string `json:"id" bson:"_id"`
 	Title string `json:"title" bson:"title"`
 	Body  string `json:"body" bson:"body"`
 	Score int    `json:"score" bson:"score"`

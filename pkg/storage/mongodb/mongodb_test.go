@@ -213,7 +213,7 @@ func TestAddJoke(t *testing.T) {
 	assert.EqualValues(t, expTitle, result.Title)
 	assert.EqualValues(t, expBody, result.Body)
 
-	_, err = db.JokesCollection.DeleteOne(ctx, bson.M{"id": result.ID})
+	_, err = db.JokesCollection.DeleteOne(ctx, bson.M{"_id": result.ID})
 	if err != nil {
 		t.Fatal(err)
 	}
