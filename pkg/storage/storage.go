@@ -8,10 +8,10 @@ import (
 
 // Storage interface.
 type Storage interface {
-	GetJokes(ctx context.Context) ([]models.Joke, error)
+	GetJokes(ctx context.Context, skip, seed int) ([]models.Joke, int, error)
 	AddJoke(ctx context.Context, title, body string) (models.Joke, error)
-	GetJokeByText(ctx context.Context, text string) ([]models.Joke, error)
+	GetJokesByText(ctx context.Context, skip, seed int, text string) ([]models.Joke, int, error)
 	GetJokeByID(ctx context.Context, id string) (models.Joke, error)
-	GetRandomJokes(ctx context.Context) ([]models.Joke, error)
-	GetFunniestJokes(ctx context.Context) ([]models.Joke, error)
+	GetRandomJokes(ctx context.Context, seed int) ([]models.Joke, int, error)
+	GetFunniestJokes(ctx context.Context, skip, seed int) ([]models.Joke, int, error)
 }

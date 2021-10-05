@@ -24,7 +24,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	jokes, err := h.storage.GetJokes(ctx)
+	jokes, size, err := h.storage.GetJokes(ctx, skip, seed)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 
@@ -34,7 +34,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pageParams := views.CreatePageParams(skip, seed, jokes)
+	pageParams := views.CreatePageParams(skip, seed, size, jokes)
 
 	err = h.template.Template.ExecuteTemplate(w, views.GetJokesTemplate, pageParams)
 	if err != nil {
@@ -80,7 +80,7 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.storage.GetJokeByText(ctx, text)
+	result, size, err := h.storage.GetJokesByText(ctx, skip, seed, text)
 	if errors.Is(err, file_storage.ErrJokeNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 
@@ -96,7 +96,7 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageParams := views.CreatePageParams(skip, seed, result)
+	pageParams := views.CreatePageParams(skip, seed, size, result)
 
 	err = h.template.Template.ExecuteTemplate(w, views.GetJokesByTextTemplate,
 		views.SearchPageParams{
@@ -150,7 +150,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	random, err := h.storage.GetRandomJokes(ctx)
+	random, size, err := h.storage.GetRandomJokes(ctx, seed)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 
@@ -160,7 +160,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pageParams := views.CreatePageParams(skip, seed, random)
+	pageParams := views.CreatePageParams(skip, seed, size, random)
 
 	err = h.template.Template.ExecuteTemplate(w, views.GetRandomJokesTemplate, pageParams)
 	if err != nil {
@@ -177,7 +177,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	funniest, err := h.storage.GetFunniestJokes(ctx)
+	funniest, size, err := h.storage.GetFunniestJokes(ctx, skip, seed)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 
@@ -187,7 +187,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pageParams := views.CreatePageParams(skip, seed, funniest)
+	pageParams := views.CreatePageParams(skip, seed, size, funniest)
 
 	err = h.template.Template.ExecuteTemplate(w, views.GetFunniestJokesTemplate, pageParams)
 	if err != nil {
