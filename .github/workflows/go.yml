@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ add-mongodb ]
+    branches: [ master ]
   pull_request:
-    branches: [ add-mongodb ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -17,12 +17,12 @@ jobs:
       with:
         go-version: 1.17
     
-    - name: Run docker-compose
-      run: docker-compose -f docker-compose-dev.yml up -d
-
     - name: Build
       run: go build -v ./...
 
+    - name: Run docker-compose
+      run: docker-compose -f docker-compose-dev.yml up -d
+      
     - name: Test
       run: go test -v ./...
     - name: Run golangci-lint

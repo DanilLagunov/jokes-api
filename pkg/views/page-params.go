@@ -16,27 +16,27 @@ type JokesPageParams struct {
 }
 
 // CreatePageParams creating a new JokesPageParams object.
-func CreatePageParams(skip, seed, dataSize int, content []models.Joke) JokesPageParams {
-	if skip >= dataSize || seed == 0 {
-		return JokesPageParams{skip, seed, 0, 0, []models.Joke{}, 0, 0}
+func CreatePageParams(skip, limit, amount int, content []models.Joke) JokesPageParams {
+	if skip >= amount || limit == 0 {
+		return JokesPageParams{skip, limit, 0, 0, []models.Joke{}, 0, 0}
 	}
 
-	currPage := skip/seed + 1
-	next := skip + seed
-	prev := skip - seed
+	currPage := skip/limit + 1
+	next := skip + limit
+	prev := skip - limit
 
 	var maxPage int
-	if dataSize%seed != 0 {
-		maxPage = dataSize/seed + 1
+	if amount%limit != 0 {
+		maxPage = amount/limit + 1
 	} else {
-		maxPage = dataSize / seed
+		maxPage = amount / limit
 	}
 
-	if skip+seed >= dataSize {
-		return JokesPageParams{skip, seed, currPage, maxPage, content[:dataSize-skip], next, prev}
+	if skip+limit >= amount {
+		return JokesPageParams{skip, limit, currPage, maxPage, content[:amount-skip], next, prev}
 	}
 
-	return JokesPageParams{skip, seed, currPage, maxPage, content, next, prev}
+	return JokesPageParams{skip, limit, currPage, maxPage, content, next, prev}
 }
 
 // SearchPageParams struct.

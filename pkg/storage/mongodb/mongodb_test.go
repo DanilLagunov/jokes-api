@@ -12,10 +12,11 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 const requestTimeout time.Duration = time.Second * 2
+
+var jokeID string
 
 func TestMain(m *testing.M) {
 	prepareDBForTests()
@@ -32,16 +33,13 @@ func prepareDBForTests() {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	jokes := []interface{}{
-		models.Joke{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
-		models.Joke{ID: "614d98a7d2ab61b5dba3648b", Title: "Second joke", Body: "Incredible", Score: 35},
-		models.Joke{ID: "6150ed6dc471125ddd1a0912", Title: "Third joke", Body: "Funny", Score: 15},
-	}
-
-	_, err = db.JokesCollection.InsertMany(ctx, jokes)
+	db.AddJoke(ctx, "First joke", "Normal", 3)
+	db.AddJoke(ctx, "Second joke", "Incredible", 35)
+	joke, err := db.AddJoke(ctx, "Third joke", "Funny", 15)
 	if err != nil {
 		log.Fatal()
 	}
+	jokeID = joke.ID
 }
 
 func TestGetJokes(t *testing.T) {
@@ -53,17 +51,22 @@ func TestGetJokes(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	expected := []models.Joke{
-		{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
-		{ID: "614d98a7d2ab61b5dba3648b", Title: "Second joke", Body: "Incredible", Score: 35},
-		{ID: "6150ed6dc471125ddd1a0912", Title: "Third joke", Body: "Funny", Score: 15},
-	}
-
-	result, size, err := db.GetJokes(ctx, 0, 3)
+	result, amount, err := db.GetJokes(ctx, 0, 3)
 	require.NoError(t, err)
 
-	assert.EqualValues(t, expected, result)
-	assert.EqualValues(t, 3, size)
+	assert.EqualValues(t, "First joke", result[0].Title)
+	assert.EqualValues(t, 3, amount)
+
+	result, amount, err = db.GetJokes(ctx, 1, 4)
+	require.NoError(t, err)
+
+	assert.EqualValues(t, "Second joke", result[0].Title)
+	assert.EqualValues(t, 3, amount)
+
+	result, _, err = db.GetJokes(ctx, 4, 4)
+	require.NoError(t, err)
+
+	assert.EqualValues(t, []models.Joke{}, result)
 }
 
 func TestGetJokeByText(t *testing.T) {
@@ -77,40 +80,41 @@ func TestGetJokeByText(t *testing.T) {
 
 	tests := []struct {
 		Text     string
-		Expected []models.Joke
+		Expected []string
 		Valid    bool
 	}{
 		{
-			Text: "first",
-			Expected: []models.Joke{
-				{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
-			},
-			Valid: true,
+			Text:     "first",
+			Expected: []string{"First joke"},
+			Valid:    true,
 		},
 		{
-			Text: "joke",
-			Expected: []models.Joke{
-				{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
-				{ID: "614d98a7d2ab61b5dba3648b", Title: "Second joke", Body: "Incredible", Score: 35},
-				{ID: "6150ed6dc471125ddd1a0912", Title: "Third joke", Body: "Funny", Score: 15},
-			},
-			Valid: true,
+			Text:     "joke",
+			Expected: []string{"First joke", "Second joke", "Third joke"},
+			Valid:    true,
 		},
 		{
 			Text:     "foo",
-			Expected: []models.Joke{},
+			Expected: []string{},
 			Valid:    false,
 		},
 	}
 
 	for _, tc := range tests {
-		result, size, err := db.GetJokesByText(ctx, 0, 3, tc.Text)
+		result, amount, err := db.GetJokesByText(ctx, 0, 3, tc.Text)
 		if tc.Valid {
 			require.NoError(t, err)
 		}
-		assert.EqualValues(t, size, len(result))
-		assert.EqualValues(t, tc.Expected, result)
+		assert.EqualValues(t, amount, len(result))
+		for i := 0; i < amount; i++ {
+			assert.EqualValues(t, tc.Expected[i], result[i].Title)
+		}
 	}
+
+	result, _, err := db.GetJokesByText(ctx, 4, 4, "first")
+	require.NoError(t, err)
+
+	assert.EqualValues(t, []models.Joke{}, result)
 }
 
 func TestGetJokeByID(t *testing.T) {
@@ -128,8 +132,8 @@ func TestGetJokeByID(t *testing.T) {
 		Valid    bool
 	}{
 		{
-			ID:       "614d988ed2ab61b5dba36489",
-			Expected: models.Joke{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
+			ID:       jokeID,
+			Expected: models.Joke{ID: jokeID, Title: "Third joke", Body: "Funny", Score: 15},
 			Valid:    true,
 		},
 		{
@@ -143,9 +147,11 @@ func TestGetJokeByID(t *testing.T) {
 		result, err := db.GetJokeByID(ctx, tc.ID)
 		if tc.Valid {
 			require.NoError(t, err)
+			assert.EqualValues(t, tc.Expected, result)
 		}
-
-		assert.EqualValues(t, tc.Expected, result)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -158,17 +164,20 @@ func TestGetFunniestJokes(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	expected := []models.Joke{
-		{ID: "614d98a7d2ab61b5dba3648b", Title: "Second joke", Body: "Incredible", Score: 35},
-		{ID: "6150ed6dc471125ddd1a0912", Title: "Third joke", Body: "Funny", Score: 15},
-		{ID: "614d988ed2ab61b5dba36489", Title: "First joke", Body: "Normal", Score: 3},
-	}
+	expected := []int{35, 15, 3}
 
-	result, size, err := db.GetFunniestJokes(ctx, 0, 3)
+	result, amount, err := db.GetFunniestJokes(ctx, 0, 3)
 	require.NoError(t, err)
 
-	assert.EqualValues(t, expected, result)
-	assert.EqualValues(t, 3, size)
+	for i := 0; i < amount; i++ {
+		assert.EqualValues(t, expected[i], result[i].Score)
+	}
+	assert.EqualValues(t, 3, amount)
+
+	result, _, err = db.GetFunniestJokes(ctx, 4, 4)
+	require.NoError(t, err)
+
+	assert.EqualValues(t, []models.Joke{}, result)
 }
 
 func TestGetRandomJokes(t *testing.T) {
@@ -189,7 +198,14 @@ func TestGetRandomJokes(t *testing.T) {
 	random, size, err := db.GetRandomJokes(ctx, 3)
 	require.NoError(t, err)
 
-	if reflect.DeepEqual(random, origin) {
+	pass := false
+	for i := 0; i < 100; i++ {
+		if reflect.DeepEqual(random, origin) == false {
+			pass = true
+			break
+		}
+	}
+	if pass == false {
 		t.Fatal("jokes not in random order")
 	}
 	assert.EqualValues(t, 3, size)
@@ -207,14 +223,9 @@ func TestAddJoke(t *testing.T) {
 	expTitle := "Added joke"
 	expBody := "New"
 
-	result, err := db.AddJoke(ctx, expTitle, expBody)
+	result, err := db.AddJoke(ctx, expTitle, expBody, 0)
 	require.NoError(t, err)
 
 	assert.EqualValues(t, expTitle, result.Title)
 	assert.EqualValues(t, expBody, result.Body)
-
-	_, err = db.JokesCollection.DeleteOne(ctx, bson.M{"_id": result.ID})
-	if err != nil {
-		t.Fatal(err)
-	}
 }
