@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/models"
+	"github.com/DanilLagunov/jokes-api/pkg/storage"
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -148,8 +149,7 @@ func TestGetJokeByID(t *testing.T) {
 		if tc.Valid {
 			require.NoError(t, err)
 			assert.EqualValues(t, tc.Expected, result)
-		}
-		if err != nil {
+		} else if err != storage.ErrJokeNotFound {
 			t.Fatal(err)
 		}
 	}
