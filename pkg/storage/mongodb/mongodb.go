@@ -40,28 +40,28 @@ func NewDatabase() (*Database, error) {
 
 // GetJokes method returns a number of jokes given by skip and limit parameters and total amount of jokes.
 func (d *Database) GetJokes(ctx context.Context, skip, limit int) ([]models.Joke, int, error) {
+	amount, err := d.jokesCollection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return []models.Joke{}, int(amount), err
+	}
+
 	options := options.Find()
 	options.SetSkip(int64(skip))
 	options.SetLimit(int64(limit))
 
-	amount, err := d.jokesCollection.CountDocuments(ctx, bson.M{})
-	if err != nil {
-		return []models.Joke{}, 0, err
-	}
-
 	cur, err := d.jokesCollection.Find(ctx, bson.M{}, options)
 	if err != nil {
-		return []models.Joke{}, 0, err
+		return []models.Joke{}, int(amount), err
 	}
 	defer cur.Close(ctx)
 
 	result := []models.Joke{}
 
 	if err := cur.All(ctx, &result); err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	if skip > int(amount) {
-		return []models.Joke{}, 0, nil
+		return []models.Joke{}, int(amount), nil
 	}
 	return result, int(amount), nil
 }
@@ -83,28 +83,28 @@ func (d *Database) GetJokesByText(ctx context.Context, skip, limit int, text str
 		bson.M{"title": primitive.Regex{Pattern: text, Options: "i"}},
 	}}
 
+	amount, err := d.jokesCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return []models.Joke{}, int(amount), err
+	}
+
 	options := options.Find()
 	options.SetSkip(int64(skip))
 	options.SetLimit(int64(limit))
-
-	amount, err := d.jokesCollection.CountDocuments(ctx, filter)
-	if err != nil {
-		return []models.Joke{}, 0, err
-	}
 
 	result := []models.Joke{}
 
 	cur, err := d.jokesCollection.Find(ctx, filter, options)
 	if err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	defer cur.Close(ctx)
 
 	if err := cur.All(ctx, &result); err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	if skip > int(amount) {
-		return []models.Joke{}, 0, nil
+		return []models.Joke{}, int(amount), nil
 	}
 	return result, int(amount), nil
 }
@@ -126,52 +126,52 @@ func (d *Database) GetJokeByID(ctx context.Context, id string) (models.Joke, err
 
 // GetRandomJokes returns number of random jokes given by limit parameter and total amount of jokes.
 func (d *Database) GetRandomJokes(ctx context.Context, limit int) ([]models.Joke, int, error) {
-	pipeline := []bson.M{{"$sample": bson.M{"size": limit}}}
-
 	amount, err := d.jokesCollection.CountDocuments(ctx, bson.M{})
 	if err != nil {
-		return []models.Joke{}, 0, err
+		return []models.Joke{}, int(amount), err
 	}
 
 	result := []models.Joke{}
 
+	pipeline := []bson.M{{"$sample": bson.M{"size": limit}}}
+
 	cur, err := d.jokesCollection.Aggregate(ctx, pipeline)
 	if err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	defer cur.Close(ctx)
 
 	if err := cur.All(ctx, &result); err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	return result, int(amount), nil
 }
 
 // GetFunniestJokes returns number of sorted jokes given by skip and limit parameters and total amount of jokes.
 func (d *Database) GetFunniestJokes(ctx context.Context, skip, limit int) ([]models.Joke, int, error) {
+	amount, err := d.jokesCollection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return []models.Joke{}, int(amount), err
+	}
+
 	findOptions := options.Find()
 	findOptions.SetSort(bson.M{"score": -1})
 	findOptions.SetSkip(int64(skip))
 	findOptions.SetLimit(int64(limit))
 
-	amount, err := d.jokesCollection.CountDocuments(ctx, bson.M{})
-	if err != nil {
-		return []models.Joke{}, 0, err
-	}
-
 	cur, err := d.jokesCollection.Find(ctx, bson.M{}, findOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, int(amount), err
 	}
 	defer cur.Close(ctx)
 
 	result := []models.Joke{}
 
 	if err := cur.All(ctx, &result); err != nil {
-		return result, 0, err
+		return result, int(amount), err
 	}
 	if skip > int(amount) {
-		return []models.Joke{}, 0, nil
+		return []models.Joke{}, int(amount), nil
 	}
 	return result, int(amount), nil
 }

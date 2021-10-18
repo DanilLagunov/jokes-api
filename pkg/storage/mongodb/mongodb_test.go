@@ -64,10 +64,11 @@ func TestGetJokes(t *testing.T) {
 	assert.EqualValues(t, "Second joke", result[0].Title)
 	assert.EqualValues(t, 3, amount)
 
-	result, _, err = db.GetJokes(ctx, 4, 4)
+	result, amount, err = db.GetJokes(ctx, 4, 4)
 	require.NoError(t, err)
 
 	assert.EqualValues(t, []models.Joke{}, result)
+	assert.EqualValues(t, 3, amount)
 }
 
 func TestGetJokeByText(t *testing.T) {
@@ -112,7 +113,7 @@ func TestGetJokeByText(t *testing.T) {
 		}
 	}
 
-	result, _, err := db.GetJokesByText(ctx, 4, 4, "first")
+	result, _, err := db.GetJokesByText(ctx, 4, 1, "first")
 	require.NoError(t, err)
 
 	assert.EqualValues(t, []models.Joke{}, result)
