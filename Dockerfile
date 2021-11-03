@@ -12,10 +12,8 @@ COPY ./templates ./build/templates
 COPY ./assets ./build/assets
 COPY ./reddit_jokes.json ./build
 
-
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-RUN apk --no-cache add tzdata
+RUN apk --no-cache add ca-certificates tzdata
 
 COPY --from=builder ./app/build .
 

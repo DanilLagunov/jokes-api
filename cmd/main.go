@@ -14,7 +14,7 @@ func main() {
 	storage := file_storage.NewFileStorage("./reddit_jokes.json")
 	template := views.NewTemptale("./templates/")
 	server := http.Server{
-		Addr:              ":8443",
+		Addr:              ":8000",
 		Handler:           api.NewHandler(storage, template),
 		ReadHeaderTimeout: time.Second * 30,
 		ReadTimeout:       time.Second * 60,
