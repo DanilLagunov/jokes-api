@@ -6,7 +6,6 @@ services:
     command: ./jokes-api
     networks:
       - backend
-
   nginx:
     image: nginx:stable
     restart: always
@@ -21,7 +20,6 @@ services:
       - "8443:443"
     networks:
       - backend
-      
 networks:
   backend:
     
