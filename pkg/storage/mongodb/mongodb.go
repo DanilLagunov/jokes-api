@@ -60,9 +60,7 @@ func (d *Database) GetJokes(ctx context.Context, skip, limit int) ([]models.Joke
 	if err := cur.All(ctx, &result); err != nil {
 		return result, int(amount), err
 	}
-	if skip > int(amount) {
-		return []models.Joke{}, int(amount), nil
-	}
+
 	return result, int(amount), nil
 }
 
@@ -103,9 +101,7 @@ func (d *Database) GetJokesByText(ctx context.Context, skip, limit int, text str
 	if err := cur.All(ctx, &result); err != nil {
 		return result, int(amount), err
 	}
-	if skip > int(amount) {
-		return []models.Joke{}, int(amount), nil
-	}
+
 	return result, int(amount), nil
 }
 
@@ -118,10 +114,9 @@ func (d *Database) GetJokeByID(ctx context.Context, id string) (models.Joke, err
 	err := d.jokesCollection.FindOne(ctx, filter).Decode(&joke)
 	if err == mongo.ErrNoDocuments {
 		return joke, storage.ErrJokeNotFound
-	} else if err != nil {
-		return joke, err
 	}
-	return joke, nil
+
+	return joke, err
 }
 
 // GetRandomJokes returns number of random jokes given by limit parameter and total amount of jokes.
@@ -131,19 +126,20 @@ func (d *Database) GetRandomJokes(ctx context.Context, limit int) ([]models.Joke
 		return []models.Joke{}, int(amount), err
 	}
 
-	result := []models.Joke{}
-
 	pipeline := []bson.M{{"$sample": bson.M{"size": limit}}}
 
 	cur, err := d.jokesCollection.Aggregate(ctx, pipeline)
 	if err != nil {
-		return result, int(amount), err
+		return []models.Joke{}, int(amount), err
 	}
+
 	defer cur.Close(ctx)
 
+	result := []models.Joke{}
 	if err := cur.All(ctx, &result); err != nil {
 		return result, int(amount), err
 	}
+
 	return result, int(amount), nil
 }
 
@@ -170,8 +166,6 @@ func (d *Database) GetFunniestJokes(ctx context.Context, skip, limit int) ([]mod
 	if err := cur.All(ctx, &result); err != nil {
 		return result, int(amount), err
 	}
-	if skip > int(amount) {
-		return []models.Joke{}, int(amount), nil
-	}
+
 	return result, int(amount), nil
 }
