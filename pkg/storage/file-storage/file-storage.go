@@ -1,8 +1,8 @@
 package fs
 
 import (
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -12,10 +12,8 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/models"
+	"github.com/DanilLagunov/jokes-api/pkg/storage"
 )
-
-// ErrJokeNotFound describes the error when the joke is not found.
-var ErrJokeNotFound = errors.New("joke not found")
 
 // FileStorage struct.
 type FileStorage struct {
@@ -36,18 +34,24 @@ func NewFileStorage(filePath string) *FileStorage {
 	return &storage
 }
 
-// GetJokes method returns all jokes.
-func (s *FileStorage) GetJokes() ([]models.Joke, error) {
-	return s.Data, nil
+// GetJokes method returns the number of jokes given by skip and limit parameters and total amount of jokes.
+func (s *FileStorage) GetJokes(ctx context.Context, skip, seed int) ([]models.Joke, int, error) {
+	if skip > len(s.Data) {
+		return []models.Joke{}, 0, nil
+	}
+	if seed > len(s.Data) {
+		return s.Data[skip:len(s.Data)], len(s.Data), nil
+	}
+	return s.Data[skip : skip+seed], len(s.Data), nil
 }
 
 // AddJoke method creating new joke.
-func (s *FileStorage) AddJoke(title, body string) error {
+func (s *FileStorage) AddJoke(ctx context.Context, title, body string, score int) (models.Joke, error) {
 	var id string
 CHECK:
 	id, err := models.GenerateID()
 	if err != nil {
-		return fmt.Errorf("ID generating error: %w", err)
+		return models.Joke{}, fmt.Errorf("ID generating error: %w", err)
 	}
 
 	for i := 0; i < len(s.Data); i++ {
@@ -56,24 +60,24 @@ CHECK:
 		}
 	}
 
-	joke := models.NewJoke(id, title, body, 0)
+	joke := models.NewJoke(id, title, body, score)
 	s.Data = append(s.Data, joke)
 
 	rawDataOut, err := json.MarshalIndent(&s.Data, "", "   ")
 	if err != nil {
-		return fmt.Errorf("marshalling error: %w", err)
+		return joke, fmt.Errorf("marshalling error: %w", err)
 	}
 
 	err = ioutil.WriteFile(s.FilePath, rawDataOut, 0)
 	if err != nil {
-		return fmt.Errorf("cannot write: %w", err)
+		return joke, fmt.Errorf("cannot write: %w", err)
 	}
 
-	return nil
+	return joke, nil
 }
 
-// GetJokeByText returns jokes which contain the desired text.
-func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
+// GetJokesByText returns the number jokes, which contain the desired text, given by skip and limit parameters and total amount of jokes.
+func (s *FileStorage) GetJokesByText(ctx context.Context, skip, seed int, text string) ([]models.Joke, int, error) {
 	var result []models.Joke
 
 	for _, item := range s.Data {
@@ -82,37 +86,45 @@ func (s *FileStorage) GetJokeByText(text string) ([]models.Joke, error) {
 		}
 	}
 	if len(result) != 0 {
-		return result, nil
+		if skip > len(result) {
+			return []models.Joke{}, 0, nil
+		}
+		if seed > len(result) {
+			return s.Data[skip:len(result)], len(result), nil
+		}
+		return result[skip : skip+seed], len(result), nil
 	}
-	return result, ErrJokeNotFound
+	return result, 0, storage.ErrJokeNotFound
 }
 
 // GetJokeByID returns joke that has the same id.
-func (s *FileStorage) GetJokeByID(id string) (models.Joke, error) {
+func (s *FileStorage) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
 	for _, item := range s.Data {
 		if item.ID == id {
 			return item, nil
 		}
 	}
-	return models.Joke{}, ErrJokeNotFound
+	return models.Joke{}, storage.ErrJokeNotFound
 }
 
-// GetRandomJokes returns random jokes.
-func (s *FileStorage) GetRandomJokes() ([]models.Joke, error) {
-	random := make([]models.Joke, 0, len(s.Data))
-
+// GetRandomJokes returns the number of random jokes given by limit parameter and total amount of jokes.
+func (s *FileStorage) GetRandomJokes(ctx context.Context, seed int) ([]models.Joke, int, error) {
 	r := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(r)
 
-	for i := 0; i < len(s.Data); i++ {
+	random := make([]models.Joke, seed)
+
+	for i := 0; i < seed; i++ {
 		random = append(random, s.Data[rnd.Intn(len(s.Data))])
 	}
-
-	return random, nil
+	if seed > len(s.Data) {
+		return random[:len(s.Data)], len(s.Data), nil
+	}
+	return random, len(random), nil
 }
 
-// GetFunniestJokes returns jokes, sorted by score.
-func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
+// GetFunniestJokes returns the number of sorted jokes, given by skip and limit parameters and total amount of jokes.
+func (s *FileStorage) GetFunniestJokes(ctx context.Context, skip, seed int) ([]models.Joke, int, error) {
 	var funniest []models.Joke
 
 	funniest = append(funniest, s.Data...)
@@ -120,7 +132,13 @@ func (s *FileStorage) GetFunniestJokes() ([]models.Joke, error) {
 		return funniest[i].Score > funniest[j].Score
 	})
 
-	return funniest, nil
+	if skip > len(funniest) {
+		return []models.Joke{}, 0, nil
+	}
+	if seed > len(funniest) {
+		return funniest[skip:], len(funniest), nil
+	}
+	return funniest[skip : skip+seed], len(funniest), nil
 }
 
 func parseJSON(path string, list *[]models.Joke) error {

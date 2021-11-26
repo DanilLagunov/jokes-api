@@ -6,13 +6,18 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
-	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
+	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
 func main() {
-	storage := file_storage.NewFileStorage("./reddit_jokes.json")
+	storage, err := mongodb.NewDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	template := views.NewTemptale("./templates/")
+
 	server := http.Server{
 		Addr:              ":8000",
 		Handler:           api.NewHandler(storage, template),

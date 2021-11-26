@@ -7,10 +7,10 @@ import (
 
 // Joke struct.
 type Joke struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Body  string `json:"body"`
-	Score int    `json:"score"`
+	ID    string `json:"id" bson:"_id"`
+	Title string `json:"title" bson:"title"`
+	Body  string `json:"body" bson:"body"`
+	Score int    `json:"score" bson:"score"`
 }
 
 // NewJoke creating a new Joke object.
