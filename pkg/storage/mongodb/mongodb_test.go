@@ -17,6 +17,12 @@ import (
 
 const requestTimeout time.Duration = time.Second * 2
 
+const (
+	URI                 string = "mongodb://localhost:27017"
+	DBName              string = "jokes-api"
+	JokesCollectionName string = "jokes"
+)
+
 var jokeID string
 
 func TestMain(m *testing.M) {
@@ -25,7 +31,7 @@ func TestMain(m *testing.M) {
 }
 
 func prepareDBForTests() {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -44,7 +50,7 @@ func prepareDBForTests() {
 }
 
 func TestGetJokes(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +78,7 @@ func TestGetJokes(t *testing.T) {
 }
 
 func TestGetJokeByText(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +126,7 @@ func TestGetJokeByText(t *testing.T) {
 }
 
 func TestGetJokeByID(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +163,7 @@ func TestGetJokeByID(t *testing.T) {
 }
 
 func TestGetFunniestJokes(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +188,7 @@ func TestGetFunniestJokes(t *testing.T) {
 }
 
 func TestGetRandomJokes(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -213,7 +219,7 @@ func TestGetRandomJokes(t *testing.T) {
 }
 
 func TestAddJoke(t *testing.T) {
-	db, err := mongodb.NewDatabase()
+	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
 		t.Fatal(err)
 	}

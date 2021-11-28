@@ -1,0 +1,11 @@
+server:
+  port: ":8000"
+  timeout:
+    read_header: 30s
+    read: 60s
+    write: 60s
+
+db:
+  uri: "mongodb://localhost:27017"
+  db_name: "jokes-api"
+  jokes_collection: "jokes"
