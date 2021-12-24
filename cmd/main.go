@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
 	"github.com/DanilLagunov/jokes-api/pkg/config"
@@ -12,17 +13,12 @@ import (
 )
 
 func main() {
-	cfgPath, err := config.ParseFlags()
+	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cfg, err := config.NewConfig(cfgPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	storage, err := mongodb.NewDatabase(cfg.Database.URI, cfg.Database.DBName, cfg.Database.JokesCollectionName)
+	storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,14 +26,17 @@ func main() {
 	template := views.NewTemptale("./templates/")
 
 	server := http.Server{
-		Addr:              cfg.Server.Port,
+		Addr:              ":" + strconv.Itoa(cfg.Port),
 		Handler:           api.NewHandler(storage, template),
-		ReadHeaderTimeout: cfg.Server.Timeout.ReadHeader,
-		ReadTimeout:       cfg.Server.Timeout.Read,
-		WriteTimeout:      cfg.Server.Timeout.Write,
+		ReadHeaderTimeout: cfg.HeaderTimeout,
+		ReadTimeout:       cfg.HeaderTimeout,
+		WriteTimeout:      cfg.HeaderTimeout,
 	}
 
 	fmt.Println(server.ReadHeaderTimeout)
+	fmt.Println(cfg.DbURI)
+	fmt.Println(cfg.DbName)
+	fmt.Println(cfg.JokesCollection)
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)

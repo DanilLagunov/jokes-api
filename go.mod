@@ -3,6 +3,7 @@ module github.com/DanilLagunov/jokes-api
 go 1.16
 
 require (
+	github.com/caarlos0/env/v6 v6.8.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/stretchr/testify v1.7.0
 	go.mongodb.org/mongo-driver v1.7.2
