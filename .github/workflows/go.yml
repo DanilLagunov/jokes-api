@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v2 
 
       - name: build docker image
-        run: docker build jokes-api .
+        run: docker build -t jokes-api .
 
       - name: save docker image
         run: docker save jokes-api > jokes-api.tar
