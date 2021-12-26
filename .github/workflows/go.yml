@@ -46,3 +46,34 @@ jobs:
         skip-pkg-cache: true
         # if set to true then the action don't cache or restore ~/.cache/go-build.
         # skip-build-cache: 
+  deploy:
+    runs-on: [self-hosted, linux]
+    needs: build
+    env:
+        PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY  }}
+        HOSTNAME : ${{ secrets.HOSTNAME  }}
+        USER_NAME : ${{ secrets.USER_NAME  }}
+    
+    steps:
+      - uses: actions/checkout@v2 
+
+      - name: build docker image
+        run: docker build jokes-api .
+
+      - name: save docker image
+        run: docker save jokes-api > jokes-api.tar
+        
+      - name: deploy to EC2
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          sudo scp -i private_key ./jokes-api.tar ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/jokes-api.tar &&
+          sudo scp -i private_key ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
+          sudo scp -i private_key ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          
+            #Now we have got the access of EC2 and we will start the deploy .
+            cd jokes-app &&
+            sudo docker-compose down --remove-orphans &&
+            sudo docker load < jokes-api.tar &&
+            sudo docker-compose -f docker-compose-dev.yml up -d &&
+            sudo docker-compose up -d 
