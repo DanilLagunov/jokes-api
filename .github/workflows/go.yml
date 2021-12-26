@@ -80,3 +80,4 @@ jobs:
             sudo docker load < jokes-api.tar &&
             sudo docker-compose -f docker-compose-dev.yml up -d &&
             sudo docker-compose up -d 
+          '
