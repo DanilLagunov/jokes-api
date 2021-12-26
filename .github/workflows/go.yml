@@ -65,11 +65,11 @@ jobs:
         
       - name: deploy to EC2
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          echo "$PRIVATE_KEY" > private_key && chmod 400 private_key
           sudo scp -i private_key ./jokes-api.tar ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/jokes-api.tar &&
           sudo scp -i private_key ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
           sudo scp -i private_key ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          ssh -i private_key ${USER_NAME}@${HOSTNAME}
           
             #Now we have got the access of EC2 and we will start the deploy .
             cd jokes-app &&
