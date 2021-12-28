@@ -2,6 +2,5 @@ version: "3.3"
 services:
   jokes-app:
     image: jokes-api:latest
-    command: ./jokes-api
     ports: 
       - 8000:8000
