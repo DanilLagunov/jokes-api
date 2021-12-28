@@ -56,6 +56,9 @@ jobs:
         HOSTNAME : ${{secrets.HOSTNAME}}
         USER_NAME : ${{secrets.USER_NAME}}
         AWS_KNOWN_HOSTS: ${{secrets.AWS_KNOWN_HOSTS}}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: jokes-api
+        IMAGE_TAG: latest
     
     steps:
     - name: Check out code
@@ -73,10 +76,6 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: jokes-api
-        IMAGE_TAG: latest
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
