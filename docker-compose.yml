@@ -2,8 +2,8 @@ version: "3.3"
 services:
   jokes-api:
     env_file:
-      - .env
+      - env_dev
     build: ./
     # command: ./jokes-api
     ports: 
-      - 8000:${PORT}
+      - 8000:8000
