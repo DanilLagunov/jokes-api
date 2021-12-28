@@ -60,7 +60,6 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2 
-      - shell: bash
       
       - name: build docker image
         run: docker build -t jokes-api .
@@ -69,6 +68,7 @@ jobs:
         run: docker save jokes-api > jokes-api.tar
         
       - name: deploy to EC2
+      - shell: bash
         run: |
           mkdir -p ~/.ssh/
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
