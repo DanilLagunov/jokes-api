@@ -60,11 +60,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2 
       
-      - name: build docker image
-        run: docker build -t jokes-api .
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
 
-      - name: save docker image
-        run: docker save jokes-api > jokes-api.tar
+      -   name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: jokes-api
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         
       - name: deploy to EC2
         shell: bash
@@ -80,7 +94,7 @@ jobs:
             #Now we have got the access of EC2 and we will start the deploy .
             cd jokes-app &&
             sudo docker-compose down --remove-orphans &&
-            sudo docker load < jokes-api.tar &&
+            sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG &&
             sudo docker-compose -f docker-compose-dev.yml up -d &&
             sudo docker-compose up -d 
           '
