@@ -67,12 +67,12 @@ jobs:
       - name: deploy to EC2
         run: |
           mkdir -p ~/.ssh/
-          echo "$PRIVATE_KEY" > ~/main.pem && chmod 600 ~/main.pem
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           echo "$AWS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          scp -i ~/main.pem ./jokes-api.tar ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/jokes-api.tar &&
-          scp -i ~/main.pem ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
-          scp -i ~/main.pem ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
-          ssh -i ~/main.pem ${USER_NAME}@${HOSTNAME} '
+          scp -o StrictHostKeyChecking=no -i private_key ./jokes-api.tar ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/jokes-api.tar &&
+          scp -o StrictHostKeyChecking=no -i private_key ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
+          scp -o StrictHostKeyChecking=no -i private_key ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
           
             #Now we have got the access of EC2 and we will start the deploy .
             cd jokes-app &&
