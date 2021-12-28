@@ -67,7 +67,7 @@ jobs:
         run: docker save jokes-api > jokes-api.tar
         
       - name: deploy to EC2
-      - shell: bash
+        shell: bash
         run: |
           mkdir -p ~/.ssh/
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
