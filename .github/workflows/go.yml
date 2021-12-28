@@ -9,9 +9,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+        PRIVATE_KEY: ${{secrets.AWS_PRIVATE_KEY}}
+        HOSTNAME : ${{secrets.HOSTNAME}}
+        USER_NAME : ${{secrets.USER_NAME}}
+        AWS_KNOWN_HOSTS: ${{secrets.AWS_KNOWN_HOSTS}}
+
     steps:
     - uses: actions/checkout@v2
 
+    - name: private key check
+        run: cat "$PRIVATE_KEY"
+        
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
@@ -57,6 +66,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2 
+
+      
 
       - name: build docker image
         run: docker build -t jokes-api .
