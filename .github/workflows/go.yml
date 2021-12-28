@@ -66,7 +66,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-south-1
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -87,7 +87,6 @@ jobs:
         mkdir -p ~/.ssh/
         echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
         echo "$AWS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-        sudo scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ./jokes-api.tar ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/jokes-api.tar &&
         sudo scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
         sudo scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
         sudo ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ${USER_NAME}@${HOSTNAME} '
