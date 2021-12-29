@@ -91,12 +91,8 @@ jobs:
         sudo ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ${USER_NAME}@${HOSTNAME} '
         
           #Now we have got the access of EC2 and we will start the deploy .
-          echo "$ECR_REGISTRY" > ecr_registry &&
-          echo "$ECR_REPOSITORY" > ecr_repository &&
-          echo "$IMAGE_TAG" > image_tag &&
           cd jokes-app &&
           sudo docker-compose down --remove-orphans &&
-          sudo docker pull $ecr_registry/$ecr_repository:$image_tag &&
           sudo docker-compose -f docker-compose-dev.yml up -d &&
           sudo docker-compose up -d 
         '
