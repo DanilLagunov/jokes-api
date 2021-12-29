@@ -93,7 +93,7 @@ jobs:
           #Now we have got the access of EC2 and we will start the deploy .
           cd jokes-app &&
           sudo docker-compose down --remove-orphans &&
-          eval $(aws ecr get-login --no-include-email | sed 's|https://||') | docker login --username AWS --password-stdin 058344251519.dkr.ecr.us-east-2.amazonaws.com
+          eval $(aws ecr get-login --no-include-email | sed ‘s|https://||’) | docker login --username AWS --password-stdin 058344251519.dkr.ecr.us-east-2.amazonaws.com
           sudo docker-compose -f docker-compose-dev.yml up -d &&
           sudo docker-compose up -d 
         '
