@@ -25,13 +25,13 @@ type Database struct {
 }
 
 // NewDatabase creating a new Database object.
-func NewDatabase() (*Database, error) {
+func NewDatabase(URI string) (*Database, error) {
 	var db Database
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://mongo-dev:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(URI))
 	db.client = client
 	collection := client.Database(DBName).Collection(JokesCollectionName)
 	db.jokesCollection = collection

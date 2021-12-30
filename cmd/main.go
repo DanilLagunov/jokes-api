@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	storage, err := mongodb.NewDatabase()
+	storage, err := mongodb.NewDatabase("mongodb://mongo-dev:27017")
 	if err != nil {
 		log.Fatal(err)
 	}
