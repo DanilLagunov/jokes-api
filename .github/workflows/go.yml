@@ -94,7 +94,7 @@ jobs:
           cd jokes-app &&
           sudo docker-compose down --remove-orphans &&
           aws ecr get-login --no-include-email --region us-east-2 &&
-          sudo docker login -u AWS -p none 058344251519.dkr.ecr.us-east-2.amazonaws.com
+          sudo docker login -u AWS --password-stdin 058344251519.dkr.ecr.us-east-2.amazonaws.com
           sudo docker-compose -f docker-compose-dev.yml up -d &&
           sudo docker-compose up -d 
         '
