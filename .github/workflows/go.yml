@@ -86,14 +86,12 @@ jobs:
         mkdir -p ~/.ssh/
         echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
         echo "$AWS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-        sudo scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ./docker-compose-dev.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose-dev.yml &&
         sudo scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ./docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/jokes-app/docker-compose.yml
         sudo ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key ${USER_NAME}@${HOSTNAME} '
         
           #Now we have got the access of EC2 and we will start the deploy .
           cd jokes-app &&
           sudo docker-compose down --remove-orphans &&
-          sudo docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) 058344251519.dkr.ecr.us-east-2.amazonaws.com
-          sudo docker-compose -f docker-compose-dev.yml up -d &&
+          sudo docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) 058344251519.dkr.ecr.us-east-2.amazonaws.com &&
           sudo docker-compose up -d 
         '
