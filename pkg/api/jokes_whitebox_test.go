@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DanilLagunov/jokes-api/pkg/cache"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,8 @@ import (
 func TestGetJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes", nil)
@@ -40,7 +42,8 @@ func TestGetJokes(t *testing.T) {
 func TestGetFunniestJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/funniest", nil)
@@ -59,7 +62,8 @@ func TestGetFunniestJokes(t *testing.T) {
 func TestGetRandomJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
@@ -80,7 +84,8 @@ func TestGetRandomJokes(t *testing.T) {
 func TestGetJokeByText(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
@@ -103,7 +108,8 @@ func TestGetJokeByText(t *testing.T) {
 func TestGetJokeByID(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
@@ -126,7 +132,8 @@ func TestGetJokeByID(t *testing.T) {
 func TestAddJoke(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	h := NewHandler(storage, template)
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	h := NewHandler(storage, template, cache)
 
 	form := url.Values{}
 	form.Set("title", "Test Joke")

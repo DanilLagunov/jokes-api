@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
+	"github.com/DanilLagunov/jokes-api/pkg/cache"
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
@@ -18,9 +19,11 @@ func main() {
 
 	template := views.NewTemptale("./templates/")
 
+	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+
 	server := http.Server{
 		Addr:              ":8000",
-		Handler:           api.NewHandler(storage, template),
+		Handler:           api.NewHandler(storage, template, cache),
 		ReadHeaderTimeout: time.Second * 30,
 		ReadTimeout:       time.Second * 60,
 		WriteTimeout:      time.Second * 60,

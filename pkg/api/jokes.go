@@ -119,11 +119,23 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// result, err := h.cache.Get(id)
+	// if err == nil {
+	// 	err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
+	// 	if err != nil {
+	// 		w.WriteHeader(http.StatusInternalServerError)
+	// 	}
+	// 	return
+	// }
+
+	// log.Printf("cache error: %s", err)
+
 	result, err := h.storage.GetJokeByID(ctx, id)
 	if errors.Is(err, storage.ErrJokeNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
@@ -134,11 +146,12 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.cache.Set(id, result, 20*time.Second)
+
 	err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	return
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
