@@ -20,7 +20,6 @@ type Database struct {
 
 // NewDatabase creating a new Database object.
 func NewDatabase(uri, dbName, jokesCollectionName string) (*Database, error) {
-
 	var db Database
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
