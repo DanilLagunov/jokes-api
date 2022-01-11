@@ -119,18 +119,18 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// result, err := h.cache.Get(id)
-	// if err == nil {
-	// 	err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
-	// 	if err != nil {
-	// 		w.WriteHeader(http.StatusInternalServerError)
-	// 	}
-	// 	return
-	// }
+	result, err := h.cache.Get(id)
+	if err == nil {
+		err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
 
-	// log.Printf("cache error: %s", err)
+	fmt.Printf("cache error: %s", err)
 
-	result, err := h.storage.GetJokeByID(ctx, id)
+	result, err = h.storage.GetJokeByID(ctx, id)
 	if errors.Is(err, storage.ErrJokeNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		return
