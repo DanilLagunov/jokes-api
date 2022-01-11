@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,14 +28,9 @@ func main() {
 		Addr:              ":" + strconv.Itoa(cfg.Port),
 		Handler:           api.NewHandler(storage, template),
 		ReadHeaderTimeout: cfg.HeaderTimeout,
-		ReadTimeout:       cfg.HeaderTimeout,
-		WriteTimeout:      cfg.HeaderTimeout,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
 	}
-
-	fmt.Println(server.ReadHeaderTimeout)
-	fmt.Println(cfg.DbURI)
-	fmt.Println(cfg.DbName)
-	fmt.Println(cfg.JokesCollection)
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
