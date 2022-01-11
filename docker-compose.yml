@@ -1,9 +1,8 @@
-version: "3.9"
+version: "3.3"
 services:
   jokes-api:
     container_name: jokes-api
-    build: ./
-    command: ./jokes-api
+    image: 058344251519.dkr.ecr.us-east-2.amazonaws.com/jokes-api:latest
     networks:
       - backend
   nginx:
@@ -22,6 +21,4 @@ services:
       - backend
 networks:
   backend:
-    
 
-    

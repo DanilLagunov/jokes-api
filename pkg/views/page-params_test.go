@@ -16,13 +16,13 @@ func TestCreatePageParams(t *testing.T) {
 		Expected views.JokesPageParams
 	}{
 		{0, 0, views.JokesPageParams{0, 0, 0, 0, []models.Joke{}, 0, 0}},
-		{20, 20, views.JokesPageParams{20, 20, 2, 5, content[20:40], 40, 0}},
-		{100, 20, views.JokesPageParams{100, 20, 6, 5, content[100:], 120, 80}},
+		{20, 20, views.JokesPageParams{20, 20, 2, 5, content[:], 40, 0}},
+		{99, 20, views.JokesPageParams{99, 20, 5, 5, content[:1], 119, 79}},
 		{101, 20, views.JokesPageParams{101, 20, 0, 0, []models.Joke{}, 0, 0}},
 	}
 
 	for _, tc := range tests {
-		pageParams := views.CreatePageParams(tc.SrcSkip, tc.SrcSeed, content[:])
+		pageParams := views.CreatePageParams(tc.SrcSkip, tc.SrcSeed, 100, content[:])
 		assert.EqualValues(t, tc.Expected, pageParams, "params are not equal")
 	}
 }
