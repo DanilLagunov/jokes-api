@@ -10,18 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PRIVATE_KEY: ${{secrets.AWS_PRIVATE_KEY}}
-      HOSTNAME : ${{secrets.HOSTNAME}}
-      USER_NAME : ${{secrets.USER_NAME}}
-      AWS_KNOWN_HOSTS: ${{secrets.AWS_KNOWN_HOSTS}}
-      ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
-      ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-      IMAGE_TAG: ${{secrets.IMAGE_TAG}}
       PORT: ${{secrets.PORT}}
       READ_HEADER_TIMEOUT: ${{secrets.READ_HEADER_TIMEOUT}}
       READ_TIMEOUT: ${{secrets.READ_TIMEOUT}}
       WRITE_TIMEOUT: ${{secrets.WRITE_TIMEOUT}}
-      DB_URI: ${{secrets.DB_URI}}
+      DB_URI: ${{secrets.DB_TEST_URI}}
       DB_NAME: ${{secrets.DB_NAME}}
       JOKES_COLLECTION: ${{secrets.JOKES_COLLECTION}}
 

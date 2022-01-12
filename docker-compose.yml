@@ -1,8 +1,6 @@
 version: "3.3"
 services:
   jokes-api:
-    env_file:
-      - env_dev
     image: 058344251519.dkr.ecr.us-east-2.amazonaws.com/jokes-api:latest
     ports: 
       - 8000:8000
