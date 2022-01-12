@@ -2,8 +2,25 @@ version: "3.3"
 services:
   jokes-api:
     env_file:
-      - env_dev
+      - env_prod
+    container_name: jokes-api
     image: 058344251519.dkr.ecr.us-east-2.amazonaws.com/jokes-api:latest
-    ports: 
-      - 8000:8000
-  
+    networks:
+      - backend
+  nginx:
+    image: nginx:stable
+    restart: always
+    container_name: nginx
+    depends_on:
+      - "jokes-api"
+    volumes:
+      - $PWD/nginx/service:/etc/nginx/conf.d/
+      - $PWD/nginx/ssl:/etc/ssl
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - backend
+networks:
+  backend:
+
