@@ -27,7 +27,7 @@ func main() {
 	server := http.Server{
 		Addr:              ":" + strconv.Itoa(cfg.Port),
 		Handler:           api.NewHandler(storage, template),
-		ReadHeaderTimeout: cfg.HeaderTimeout,
+		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		ReadTimeout:       cfg.ReadTimeout,
 		WriteTimeout:      cfg.WriteTimeout,
 	}
