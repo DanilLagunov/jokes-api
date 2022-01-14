@@ -10,13 +10,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PORT: ${{secrets.PORT}}
-      READ_HEADER_TIMEOUT: ${{secrets.READ_HEADER_TIMEOUT}}
-      READ_TIMEOUT: ${{secrets.READ_TIMEOUT}}
-      WRITE_TIMEOUT: ${{secrets.WRITE_TIMEOUT}}
-      DB_URI: ${{secrets.DB_TEST_URI}}
-      DB_NAME: ${{secrets.DB_NAME}}
-      JOKES_COLLECTION: ${{secrets.JOKES_COLLECTION}}
+      PORT: 8000
+      READ_HEADER_TIMEOUT: 30s
+      READ_TIMEOUT: 60s
+      WRITE_TIMEOUT: 60s
+      DB_URI: "mongodb://mongo"
+      DB_NAME: "jokes-api"
+      JOKES_COLLECTION: "jokes"
 
     steps:
     - uses: actions/checkout@v2
@@ -67,13 +67,13 @@ jobs:
       ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
       ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
       IMAGE_TAG: ${{secrets.IMAGE_TAG}}
-      PORT: ${{secrets.PORT}}
-      READ_HEADER_TIMEOUT: ${{secrets.READ_HEADER_TIMEOUT}}
-      READ_TIMEOUT: ${{secrets.READ_TIMEOUT}}
-      WRITE_TIMEOUT: ${{secrets.WRITE_TIMEOUT}}
-      DB_URI: ${{secrets.DB_URI}}
-      DB_NAME: ${{secrets.DB_NAME}}
-      JOKES_COLLECTION: ${{secrets.JOKES_COLLECTION}}
+      PORT: 8000
+      READ_HEADER_TIMEOUT: 30s
+      READ_TIMEOUT: 60s
+      WRITE_TIMEOUT: 60s
+      DB_URI: "mongodb+srv://${{secrets.DB_USERNAME}}:${{secrets.DB_PASSWORD}}@sandbox.evatv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+      DB_NAME: "jokes-api"
+      JOKES_COLLECTION: "jokes"
     
     steps:
     - name: Check out code
