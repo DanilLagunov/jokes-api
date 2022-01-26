@@ -16,11 +16,11 @@ type Handler struct {
 	Router   *mux.Router
 	storage  storage.Storage
 	template views.Template
-	cache    *cache.Cache
+	cache    cache.Cache
 }
 
 // NewHandler creating a new Handler object.
-func NewHandler(s storage.Storage, t views.Template, c *cache.Cache) *Handler {
+func NewHandler(s storage.Storage, t views.Template, c cache.Cache) *Handler {
 	h := &Handler{
 		storage:  s,
 		template: t,

@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DanilLagunov/jokes-api/pkg/cache"
+	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ import (
 func TestGetJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
@@ -42,7 +42,7 @@ func TestGetJokes(t *testing.T) {
 func TestGetFunniestJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
@@ -62,7 +62,7 @@ func TestGetFunniestJokes(t *testing.T) {
 func TestGetRandomJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
@@ -84,7 +84,7 @@ func TestGetRandomJokes(t *testing.T) {
 func TestGetJokeByText(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
@@ -108,7 +108,7 @@ func TestGetJokeByText(t *testing.T) {
 func TestGetJokeByID(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
@@ -132,7 +132,7 @@ func TestGetJokeByID(t *testing.T) {
 func TestAddJoke(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 	h := NewHandler(storage, template, cache)
 
 	form := url.Values{}

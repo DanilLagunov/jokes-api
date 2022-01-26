@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
-	"github.com/DanilLagunov/jokes-api/pkg/cache"
+	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
@@ -19,7 +19,7 @@ func main() {
 
 	template := views.NewTemptale("./templates/")
 
-	cache := cache.NewCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
 
 	server := http.Server{
 		Addr:              ":8000",

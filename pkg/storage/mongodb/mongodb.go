@@ -107,7 +107,7 @@ func (d *Database) GetJokesByText(ctx context.Context, skip, limit int, text str
 
 // GetJokeByID returns joke that has the same id.
 func (d *Database) GetJokeByID(ctx context.Context, id string) (models.Joke, error) {
-	filter := bson.D{{Key: "_id", Value: id}}
+	filter := bson.M{"_id": id}
 
 	var joke models.Joke
 
