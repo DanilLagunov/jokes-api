@@ -16,6 +16,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -112,10 +113,14 @@ func TestGetJokeByID(t *testing.T) {
 	h := NewHandler(storage, template, cache)
 
 	recorder := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
-	q := req.URL.Query()
-	q.Add("id", "1a7xnd")
-	req.URL.RawQuery = q.Encode()
+	req := httptest.NewRequest(http.MethodGet, "/jokes/", nil)
+
+	vars := map[string]string{
+		"id": "1a7xnd",
+	}
+
+	// CHANGE THIS LINE!!!
+	req = mux.SetURLVars(req, vars)
 
 	h.getJokeByID(recorder, req)
 
