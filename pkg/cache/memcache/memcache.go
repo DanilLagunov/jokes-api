@@ -8,7 +8,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/models"
 )
 
-// Cache struct.
+// MemCache struct.
 type MemCache struct {
 	sync.RWMutex
 	defaultExpiration time.Duration
@@ -23,7 +23,7 @@ type Item struct {
 	Expiration int64
 }
 
-// NewCache creating new Cache object.
+// NewMemCache creating new Cache object.
 func NewMemCache(defaultExpiration, cleanupInterval time.Duration) *MemCache {
 	items := make(map[string]Item)
 
