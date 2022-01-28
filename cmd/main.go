@@ -3,30 +3,36 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
+	"strconv"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
 	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
+	"github.com/DanilLagunov/jokes-api/pkg/config"
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
 func main() {
-	storage, err := mongodb.NewDatabase("mongodb+srv://m001-student:m001-mongodb-basics@sandbox.evatv.mongodb.net/jokes-api?retryWrites=true&w=majority")
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	template := views.NewTemptale("./templates/")
 
-	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
+	cache := memcache.NewMemCache(cfg.CacheDefaultExpiration, cfg.CacheCleanupInterval)
 
 	server := http.Server{
-		Addr:              ":8000",
+		Addr:              ":" + strconv.Itoa(cfg.Port),
 		Handler:           api.NewHandler(storage, template, cache),
-		ReadHeaderTimeout: time.Second * 30,
-		ReadTimeout:       time.Second * 60,
-		WriteTimeout:      time.Second * 60,
+		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
 	}
 
 	if err := server.ListenAndServe(); err != nil {
