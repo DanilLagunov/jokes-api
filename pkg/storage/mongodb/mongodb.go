@@ -12,12 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DBName used to set database name.
-const DBName string = "jokes-api"
-
-// JokesCollectionName used to set collection name.
-const JokesCollectionName string = "jokes"
-
 // Database struct.
 type Database struct {
 	client          *mongo.Client
@@ -25,15 +19,15 @@ type Database struct {
 }
 
 // NewDatabase creating a new Database object.
-func NewDatabase(URI string) (*Database, error) {
+func NewDatabase(uri, dbName, jokesCollectionName string) (*Database, error) {
 	var db Database
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	db.client = client
-	collection := client.Database(DBName).Collection(JokesCollectionName)
+	collection := client.Database(dbName).Collection(jokesCollectionName)
 	db.jokesCollection = collection
 	return &db, err
 }
