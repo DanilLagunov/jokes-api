@@ -62,16 +62,13 @@ func TestCache(t *testing.T) {
 	time.Sleep(2*time.Second + 80*time.Millisecond)
 	for _, tc := range tests {
 		for i := 0; i < 1000; i++ {
-			wg.Add(2)
+			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				cache.Set(tc.Item.ID, tc.Item, tc.Duration)
-			}()
-			go func() {
-				defer wg.Done()
-				item, _ := cache.Get(tc.Item.ID)
+				item, err := cache.Get(tc.Item.ID)
 				assert.EqualValues(t, tc.Item, item)
-				// require.NoError(t, err)
+				require.NoError(t, err)
 			}()
 		}
 		wg.Wait()
