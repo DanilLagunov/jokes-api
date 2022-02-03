@@ -8,7 +8,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/api"
 	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	"github.com/DanilLagunov/jokes-api/pkg/config"
-	fs "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
+	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 )
 
@@ -18,12 +18,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	storage := fs.NewFileStorage("./pkg/api/test-data/test_jokes.json")
+	storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	template := views.NewTemptale("./templates/")
 
