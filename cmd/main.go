@@ -1,29 +1,35 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
 	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	"github.com/DanilLagunov/jokes-api/pkg/config"
-	fs "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
+	"github.com/DanilLagunov/jokes-api/pkg/logger"
+	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
+	"go.uber.org/zap"
 )
 
 func main() {
+	globalLogger := logger.InitLogger()
+	zap.ReplaceGlobals(globalLogger)
+
+	defer globalLogger.Sync()
+
+	logger := globalLogger.Sugar()
+
 	cfg, err := config.NewConfig()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatalf("config creating error: %s", err)
 	}
 
-	// storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	storage := fs.NewFileStorage("./pkg/api/test-data/test_jokes.json")
+	storage, err := mongodb.NewDatabase(cfg.DbURI, cfg.DbName, cfg.JokesCollection)
+	if err != nil {
+		logger.Fatalf("database creating error: %s", err)
+	}
 
 	template := views.NewTemptale("./templates/")
 
@@ -37,7 +43,8 @@ func main() {
 		WriteTimeout:      cfg.WriteTimeout,
 	}
 
+	logger.Infof("Server is listening on port %d", cfg.Port)
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		logger.Fatalf("server error: %s", err)
 	}
 }
