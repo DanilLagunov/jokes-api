@@ -1,9 +1,10 @@
 package views
 
 import (
-	"fmt"
 	"html/template"
 	"path"
+
+	"go.uber.org/zap"
 )
 
 // GetJokesTemplate is a constant for calling the "index" template.
@@ -39,7 +40,7 @@ func NewTemptale(folder string) Template {
 		path.Join(folder, "header.html"),
 		path.Join(folder, "footer.html"))
 	if err != nil {
-		fmt.Println("template parsing error: %w", err)
+		zap.S().Errorf("template parsing error: %w", err)
 	}
 
 	t.Template = template

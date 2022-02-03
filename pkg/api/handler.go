@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 // Handler struct.
@@ -36,5 +36,5 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	h.Router.ServeHTTP(w, req)
 
 	// measure time
-	fmt.Printf("request time is %v \n", time.Since(start))
+	zap.S().Infof("request time is %v \n", time.Since(start))
 }

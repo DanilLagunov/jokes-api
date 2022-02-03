@@ -190,7 +190,7 @@ func TestGetFunniestJokes(t *testing.T) {
 func TestGetRandomJokes(t *testing.T) {
 	db, err := mongodb.NewDatabase(URI, DBName, JokesCollectionName)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)

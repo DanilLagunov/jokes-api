@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/DanilLagunov/jokes-api/pkg/storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 const requestTimeout time.Duration = time.Second * 2
@@ -118,7 +118,7 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.cache.Get(id)
 	if err != nil {
-		fmt.Printf("cache error: %s", err)
+		zap.S().Errorf("cache error: %s \n", err)
 
 		result, err = h.storage.GetJokeByID(ctx, id)
 		if errors.Is(err, storage.ErrJokeNotFound) {
@@ -200,7 +200,7 @@ func getPaginationParams(r *http.Request) (int, int, error) {
 
 	skipStr := r.URL.Query().Get("skip")
 	if skipStr == "" {
-		fmt.Println("Skip is not specified, using default value")
+		zap.S().Info("Skip is not specified, using default value")
 
 		skip = 0
 	} else {
@@ -232,6 +232,6 @@ func getPaginationParams(r *http.Request) (int, int, error) {
 
 func logResponseWriteError(err error) {
 	if err != nil {
-		log.Printf("response writing error: %s", err)
+		zap.S().Errorf("response writing error: %s", err)
 	}
 }

@@ -71,7 +71,7 @@ func TestGetRandomJokes(t *testing.T) {
 
 	data, err := os.ReadFile("./test-data/index_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	h.getRandomJokes(recorder, req)
@@ -98,7 +98,7 @@ func TestGetJokeByText(t *testing.T) {
 
 	data, err := os.ReadFile("./test-data/get-jokes-by-text_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	assert.EqualValues(t, data, recorder.Body.Bytes())
@@ -126,7 +126,7 @@ func TestGetJokeByID(t *testing.T) {
 
 	data, err := os.ReadFile("./test-data/get-joke-by-id_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	assert.EqualValues(t, data, recorder.Body.Bytes())

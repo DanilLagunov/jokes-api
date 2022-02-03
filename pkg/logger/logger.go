@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// InitLogger creates new configured *zap.Logger.
 func InitLogger() *zap.Logger {
 	config := zap.Config{
 		Encoding:         "console",
