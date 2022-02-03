@@ -92,22 +92,9 @@ func (c *MemCache) cleaner() {
 			return
 		}
 
-		// if keys := c.findExpiredKeys(); len(keys) != 0 {
-		// 	c.clearItems(keys)
-		// }
 		c.clearExpiredItems()
 	}
 }
-
-// func (c *MemCache) clearItems(keys []string) {
-// 	c.Lock()
-
-// 	defer c.Unlock()
-
-// 	for _, k := range keys {
-// 		delete(c.items, k)
-// 	}
-// }
 
 func (c *MemCache) clearExpiredItems() {
 	c.Lock()
@@ -117,7 +104,6 @@ func (c *MemCache) clearExpiredItems() {
 	currentTime := time.Now().UnixNano()
 	for k, i := range c.items {
 		if currentTime > i.Expiration && i.Expiration > 0 {
-			// keys = append(keys, k)
 			delete(c.items, k)
 		}
 	}
