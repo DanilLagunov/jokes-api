@@ -17,6 +17,8 @@ jobs:
       DB_URI: "mongodb://mongo"
       DB_NAME: "jokes-api"
       JOKES_COLLECTION: "jokes"
+      DEFAULT_EXPIRATION: 20s
+      CLEANUP_INTERVAL: 60s
 
     steps:
     - uses: actions/checkout@v2
@@ -73,6 +75,8 @@ jobs:
       DB_URI: "mongodb+srv://${{secrets.DB_USERNAME}}:${{secrets.DB_PASSWORD}}@sandbox.evatv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
       DB_NAME: "jokes-api"
       JOKES_COLLECTION: "jokes"
+      DEFAULT_EXPIRATION: 20s
+      CLEANUP_INTERVAL: 60s
     
     steps:
     - name: Check out code

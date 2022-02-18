@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/DanilLagunov/jokes-api/pkg/api"
+	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
 	"github.com/DanilLagunov/jokes-api/pkg/config"
 	"github.com/DanilLagunov/jokes-api/pkg/storage/mongodb"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
@@ -24,9 +25,11 @@ func main() {
 
 	template := views.NewTemptale("./templates/")
 
+	cache := memcache.NewMemCache(cfg.CacheDefaultExpiration, cfg.CacheCleanupInterval)
+
 	server := http.Server{
 		Addr:              ":" + strconv.Itoa(cfg.Port),
-		Handler:           api.NewHandler(storage, template),
+		Handler:           api.NewHandler(storage, template, cache),
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		ReadTimeout:       cfg.ReadTimeout,
 		WriteTimeout:      cfg.WriteTimeout,

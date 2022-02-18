@@ -11,6 +11,7 @@ import (
 
 	"github.com/DanilLagunov/jokes-api/pkg/storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
+	"github.com/gorilla/mux"
 )
 
 const requestTimeout time.Duration = time.Second * 2
@@ -29,9 +30,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			log.Printf("response writing error: %s", err)
-		}
+		logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, jokes)
@@ -54,9 +53,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			log.Printf("response writing error: %s", err)
-		}
+		logResponseWriteError(err)
 
 		return
 	}
@@ -89,9 +86,7 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			log.Printf("response writing error: %s", err)
-		}
+		logResponseWriteError(err)
 
 		return
 	}
@@ -112,33 +107,40 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
 
-	id := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	id := vars["id"]
+	// id := r.URL.Query().Get("id")
 
 	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	result, err := h.storage.GetJokeByID(ctx, id)
-	if errors.Is(err, storage.ErrJokeNotFound) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	} else if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	result, err := h.cache.Get(id)
+	if err != nil {
+		fmt.Printf("cache error: %s", err)
 
-		_, err := w.Write([]byte(err.Error()))
+		result, err = h.storage.GetJokeByID(ctx, id)
+		if errors.Is(err, storage.ErrJokeNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
-			log.Printf("response writing error: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+
+			_, err := w.Write([]byte(err.Error()))
+			logResponseWriteError(err)
+
+			return
 		}
 
-		return
+		h.cache.Set(id, result, 0)
 	}
 
 	err = h.template.Template.ExecuteTemplate(w, views.GetJokeByIDTemplate, result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	return
 }
 
 func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
@@ -155,9 +157,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			log.Printf("response writing error: %s", err)
-		}
+		logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, random)
@@ -182,9 +182,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			log.Printf("response writing error: %s", err)
-		}
+		logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, funniest)
@@ -230,4 +228,10 @@ func getPaginationParams(r *http.Request) (int, int, error) {
 		}
 	}
 	return skip, limit, nil
+}
+
+func logResponseWriteError(err error) {
+	if err != nil {
+		log.Printf("response writing error: %s", err)
+	}
 }

@@ -15,13 +15,13 @@
 </div>
 
 <div class="wrapper search">
-  <form class="search-form" method="GET" action="/jokes/search">
+  <form class="search-form" method="GET" action="/jokes/">
     <input type="text" placeholder="Search by ID" name="id">
     <button type="submit">Search</button>
     <!-- <input class="button" type="submit" value="Search"> -->
   </form>
   
-  <form class="search-form" method="GET" action="/jokes/search">
+  <form class="search-form" method="GET" action="/jokes/search/">
       <input type="text" placeholder="Search by text" name="text">
       <button type="submit">Search</button>
       <!-- <input class="button" type="submit" value="Search"> -->
@@ -30,7 +30,7 @@
 
 {{range $key, $value := .Content}}
   <div class="wrapper">
-    <h3 class="joke-title">{{ $value.Title}}</h1>
+    <h3 class="joke-title"><a href="/jokes/{{ $value.ID }}">{{ $value.Title}}</a></h1>
     <p class="joke-body">{{ $value.Body}}</p>
     <span class="joke-score">Score: {{ $value.Score}}</span>
   </div>
