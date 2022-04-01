@@ -14,6 +14,7 @@ var (
 	ErrItemExpired = errors.New("item expired")
 )
 
+// Item desribe cache item struct.
 type Item struct {
 	Value      models.Joke
 	Created    time.Time
