@@ -14,6 +14,12 @@ var (
 	ErrItemExpired = errors.New("item expired")
 )
 
+type Item struct {
+	Value      models.Joke
+	Created    time.Time
+	Expiration int64
+}
+
 // Cache interface.
 type Cache interface {
 	Get(key string) (models.Joke, error)
