@@ -5,8 +5,13 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Logger struct.
+type Logger struct {
+	Log *zap.SugaredLogger
+}
+
 // InitLogger creates new configured *zap.Logger.
-func InitLogger() *zap.Logger {
+func InitLogger() *Logger {
 	config := zap.Config{
 		Encoding:         "console",
 		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
@@ -25,6 +30,9 @@ func InitLogger() *zap.Logger {
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
 	}
-	logger, _ := config.Build()
-	return logger
+	log, _ := config.Build()
+	logger := Logger{
+		Log: log.Sugar(),
+	}
+	return &logger
 }
