@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,7 +19,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
 
-	skip, limit, err := getPaginationParams(r)
+	skip, limit, err := h.getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -30,7 +29,7 @@ func (h Handler) getJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		logResponseWriteError(err)
+		h.logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, jokes)
@@ -53,7 +52,7 @@ func (h Handler) addJoke(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		logResponseWriteError(err)
+		h.logResponseWriteError(err)
 
 		return
 	}
@@ -67,7 +66,7 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 
 	text := r.URL.Query().Get("text")
 
-	skip, limit, err := getPaginationParams(r)
+	skip, limit, err := h.getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -86,7 +85,7 @@ func (h Handler) getJokesByText(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		logResponseWriteError(err)
+		h.logResponseWriteError(err)
 
 		return
 	}
@@ -118,7 +117,7 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.cache.Get(id)
 	if err != nil {
-		fmt.Printf("cache error: %s", err)
+		h.logger.Log.Errorf("cache error: %s \n", err)
 
 		result, err = h.storage.GetJokeByID(ctx, id)
 		if errors.Is(err, storage.ErrJokeNotFound) {
@@ -129,7 +128,7 @@ func (h Handler) getJokeByID(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 
 			_, err := w.Write([]byte(err.Error()))
-			logResponseWriteError(err)
+			h.logResponseWriteError(err)
 
 			return
 		}
@@ -147,7 +146,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
 
-	skip, limit, err := getPaginationParams(r)
+	skip, limit, err := h.getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -157,7 +156,7 @@ func (h Handler) getRandomJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		logResponseWriteError(err)
+		h.logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, random)
@@ -172,7 +171,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
 	defer cancel()
 
-	skip, limit, err := getPaginationParams(r)
+	skip, limit, err := h.getPaginationParams(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -182,7 +181,7 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 
 		_, err := w.Write([]byte(err.Error()))
-		logResponseWriteError(err)
+		h.logResponseWriteError(err)
 	}
 
 	pageParams := views.CreatePageParams(skip, limit, amount, funniest)
@@ -193,14 +192,14 @@ func (h Handler) getFunniestJokes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getPaginationParams(r *http.Request) (int, int, error) {
+func (h Handler) getPaginationParams(r *http.Request) (int, int, error) {
 	var skip, limit int
 
 	var err error
 
 	skipStr := r.URL.Query().Get("skip")
 	if skipStr == "" {
-		fmt.Println("Skip is not specified, using default value")
+		h.logger.Log.Info("Skip is not specified, using default value")
 
 		skip = 0
 	} else {
@@ -230,8 +229,8 @@ func getPaginationParams(r *http.Request) (int, int, error) {
 	return skip, limit, nil
 }
 
-func logResponseWriteError(err error) {
+func (h Handler) logResponseWriteError(err error) {
 	if err != nil {
-		log.Printf("response writing error: %s", err)
+		h.logger.Log.Errorf("response writing error: %s", err)
 	}
 }

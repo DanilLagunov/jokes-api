@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/DanilLagunov/jokes-api/pkg/cache/memcache"
+	"github.com/DanilLagunov/jokes-api/pkg/logger"
 	file_storage "github.com/DanilLagunov/jokes-api/pkg/storage/file-storage"
 	"github.com/DanilLagunov/jokes-api/pkg/views"
 	"github.com/gorilla/mux"
@@ -25,7 +26,8 @@ func TestGetJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes", nil)
@@ -44,7 +46,8 @@ func TestGetFunniestJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/funniest", nil)
@@ -64,14 +67,15 @@ func TestGetRandomJokes(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
 
 	data, err := os.ReadFile("./test-data/index_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	h.getRandomJokes(recorder, req)
@@ -86,7 +90,8 @@ func TestGetJokeByText(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/search", nil)
@@ -98,7 +103,7 @@ func TestGetJokeByText(t *testing.T) {
 
 	data, err := os.ReadFile("./test-data/get-jokes-by-text_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	assert.EqualValues(t, data, recorder.Body.Bytes())
@@ -110,7 +115,8 @@ func TestGetJokeByID(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/jokes/", nil)
@@ -126,7 +132,7 @@ func TestGetJokeByID(t *testing.T) {
 
 	data, err := os.ReadFile("./test-data/get-joke-by-id_test.html")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	assert.EqualValues(t, data, recorder.Body.Bytes())
@@ -138,7 +144,8 @@ func TestAddJoke(t *testing.T) {
 	storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
 	template := views.NewTemptale("../../templates/")
 	cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
-	h := NewHandler(storage, template, cache)
+	logger := logger.InitLogger()
+	h := NewHandler(storage, template, cache, *logger)
 
 	form := url.Values{}
 	form.Set("title", "Test Joke")
@@ -176,7 +183,13 @@ func TestGetPaginationParams(t *testing.T) {
 		q.Add("seed", tc.SrcSkip)
 		req.URL.RawQuery = q.Encode()
 
-		skip, seed, err := getPaginationParams(req)
+		storage := file_storage.NewFileStorage("./test-data/test_jokes.json")
+		template := views.NewTemptale("../../templates/")
+		cache := memcache.NewMemCache(20*time.Second, 1*time.Minute)
+		logger := logger.InitLogger()
+		h := NewHandler(storage, template, cache, *logger)
+
+		skip, seed, err := h.getPaginationParams(req)
 		if tc.Valid {
 			require.NoError(t, err)
 		}
