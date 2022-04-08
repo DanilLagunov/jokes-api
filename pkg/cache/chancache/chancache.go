@@ -12,33 +12,27 @@ import (
 type ChanCache struct {
 	getCh             chan GetRequest
 	setCh             chan SetRequest
-	cleanCh           chan CleanRequest
+	cleanCh           chan struct{}
 	defaultExpiration time.Duration
 	cleanupInterval   time.Duration
-	items             map[string]cache.Item
+	items             map[string]*cache.Item
 }
 
 // GetRequest describes the controller of Get func.
 type GetRequest struct {
 	key    string
-	respCh chan cache.Item
+	respCh chan *cache.Item
 }
 
 // SetRequest describes the controller of Set func.
 type SetRequest struct {
 	key  string
-	item chan cache.Item
-}
-
-// CleanRequest describes the controller of cleaner.
-type CleanRequest struct {
-	start chan struct{}
-	done  chan struct{}
+	item chan *cache.Item
 }
 
 // NewChannelCache creates new ChanCache object.
 func NewChannelCache(ctx context.Context, defaultExpiration, cleanupInterval time.Duration) *ChanCache {
-	items := make(map[string]cache.Item)
+	items := make(map[string]*cache.Item)
 
 	cache := ChanCache{
 		items:             items,
@@ -46,7 +40,7 @@ func NewChannelCache(ctx context.Context, defaultExpiration, cleanupInterval tim
 		cleanupInterval:   cleanupInterval,
 		getCh:             make(chan GetRequest),
 		setCh:             make(chan SetRequest),
-		cleanCh:           make(chan CleanRequest),
+		cleanCh:           make(chan struct{}),
 	}
 
 	go cache.ChannelBasedCacheController(ctx)
@@ -66,8 +60,8 @@ func (c *ChanCache) ChannelBasedCacheController(ctx context.Context) {
 			getReq.respCh <- c.items[getReq.key]
 		case setReq := <-c.setCh:
 			c.items[setReq.key] = <-setReq.item
-		case cleanReq := <-c.cleanCh:
-			<-cleanReq.done
+		case <-c.cleanCh:
+			<-c.cleanCh
 		case <-ctx.Done():
 			return
 		}
@@ -76,7 +70,7 @@ func (c *ChanCache) ChannelBasedCacheController(ctx context.Context) {
 
 // Get return cache item by key.
 func (c *ChanCache) Get(key string) (models.Joke, error) {
-	responseCh := make(chan cache.Item, 1)
+	responseCh := make(chan *cache.Item, 1)
 	getReq := GetRequest{
 		key:    key,
 		respCh: responseCh,
@@ -85,15 +79,13 @@ func (c *ChanCache) Get(key string) (models.Joke, error) {
 
 	item := <-getReq.respCh
 
-	if item == (cache.Item{}) {
+	if item == nil {
 		return models.Joke{}, cache.ErrKeyNotFound
 	}
 
 	currentTime := time.Now().UnixNano()
-	if item.Expiration > 0 {
-		if currentTime > item.Expiration {
-			return models.Joke{}, cache.ErrItemExpired
-		}
+	if item.Expiration > 0 && currentTime > item.Expiration {
+		return models.Joke{}, cache.ErrItemExpired
 	}
 
 	return item.Value, nil
@@ -103,7 +95,7 @@ func (c *ChanCache) Get(key string) (models.Joke, error) {
 func (c *ChanCache) Set(key string, value models.Joke, duration time.Duration) {
 	var expiration int64
 
-	item := make(chan cache.Item, 1)
+	item := make(chan *cache.Item, 1)
 
 	if duration == 0 {
 		duration = c.defaultExpiration
@@ -117,7 +109,7 @@ func (c *ChanCache) Set(key string, value models.Joke, duration time.Duration) {
 		key:  key,
 		item: item,
 	}
-	setReq.item <- cache.Item{
+	setReq.item <- &cache.Item{
 		Value:      value,
 		Expiration: expiration,
 		Created:    time.Now(),
@@ -138,14 +130,7 @@ func (c *ChanCache) cleaner() {
 }
 
 func (c *ChanCache) clearExpiredItems() {
-	start := make(chan struct{}, 1)
-	done := make(chan struct{}, 1)
-	cleanReq := CleanRequest{
-		start: start,
-		done:  done,
-	}
-	cleanReq.start <- struct{}{}
-	c.cleanCh <- cleanReq
+	c.cleanCh <- struct{}{}
 
 	currentTime := time.Now().UnixNano()
 	for k, i := range c.items {
@@ -154,6 +139,6 @@ func (c *ChanCache) clearExpiredItems() {
 		}
 	}
 
-	cleanReq.done <- struct{}{}
+	c.cleanCh <- struct{}{}
 	return
 }

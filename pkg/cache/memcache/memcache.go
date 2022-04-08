@@ -13,14 +13,14 @@ type MemCache struct {
 	sync.RWMutex
 	defaultExpiration time.Duration
 	cleanupInterval   time.Duration
-	items             map[string]cache.Item
+	items             map[string]*cache.Item
 }
 
 // Item struct.
 
 // NewMemCache creates new MemCache object.
 func NewMemCache(defaultExpiration, cleanupInterval time.Duration) *MemCache {
-	items := make(map[string]cache.Item)
+	items := make(map[string]*cache.Item)
 
 	cache := MemCache{
 		items:             items,
@@ -72,7 +72,7 @@ func (c *MemCache) Set(key string, value models.Joke, duration time.Duration) {
 
 	defer c.Unlock()
 
-	c.items[key] = cache.Item{
+	c.items[key] = &cache.Item{
 		Value:      value,
 		Expiration: expiration,
 		Created:    time.Now(),
